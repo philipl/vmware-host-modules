@@ -77,7 +77,7 @@
  */
 
 unsigned long SMACINT
-SMACL_GetUptime()
+SMACL_GetUptime(void)
 {
    return jiffies;
 }
