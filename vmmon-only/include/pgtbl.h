@@ -26,6 +26,7 @@
 #include "compat_pgtable.h"
 #include "compat_spinlock.h"
 #include "compat_page.h"
+#include "compat_version.h"
 
 
 /*
@@ -46,6 +47,7 @@
  *-----------------------------------------------------------------------------
  */
 
+#if COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) // only used by PgtblVa2MPN() below
 static INLINE MPN
 PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
                   VA addr)              // IN: Address in the virtual address
@@ -107,6 +109,7 @@ PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
    }
    return mpn;
 }
+#endif
 
 
 /*
@@ -126,6 +129,8 @@ PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
  *-----------------------------------------------------------------------------
  */
 
+#if COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0)
+
 static INLINE MPN
 PgtblVa2MPN(VA addr)  // IN
 {
@@ -139,5 +144,25 @@ PgtblVa2MPN(VA addr)  // IN
    spin_unlock(&mm->page_table_lock);
    return mpn;
 }
+
+#else /* COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) */
+
+static INLINE MPN
+PgtblVa2MPN(VA addr)  // IN
+{
+   struct page *page;
+   int npages;
+   MPN mpn;
+
+   npages = get_user_pages_unlocked(addr, 1, &page, FOLL_HWPOISON);
+   if (npages != 1)
+	   return INVALID_MPN;
+   mpn = page_to_pfn(page);
+   put_page(page);
+
+   return mpn;
+}
+
+#endif /* COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) */
 
 #endif /* __PGTBL_H__ */
