@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998-2022 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -267,7 +268,7 @@ LinuxDriverInitTSCkHz(void)
  *----------------------------------------------------------------------
  */
 
-int
+static int
 LinuxDriverInit(void)
 {
    int retval;
@@ -335,7 +336,7 @@ LinuxDriverInit(void)
  *----------------------------------------------------------------------
  */
 
-void
+static void
 LinuxDriverExit(void)
 {
    /*

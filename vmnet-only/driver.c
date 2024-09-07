@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998,2021 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -49,18 +50,6 @@
 #include "vnetFilter.h"
 
 #include "vmnetInt.h"
-
-/*
- * Initialization and creation routines from other files.
- * Putting them here reduces the need for so many header files.
- */
-
-extern int VNetUserIf_Create(VNetPort **ret);
-extern int VNetNetIf_Create(char *devName, VNetPort **ret, int hubNum);
-extern int VNetBridge_Create(char *devName, uint32 flags, VNetJack *hubJack,
-                             VNetPort **ret);
-extern int VNetUserListener_Create(uint32 classMask, VNetJack *hubJack, VNetPort **ret);
-
 
 /*
  *  Structure for cycle detection of host interfaces.  This
