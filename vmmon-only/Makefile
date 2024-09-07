@@ -41,7 +41,7 @@ INCLUDE      += -I$(SRCROOT)/shared
 endif
 
 
-VM_UNAME = $(shell uname -r)
+VM_UNAME ?= $(shell uname -r)
 
 # Header directory for the running kernel
 ifdef LINUXINCLUDE
