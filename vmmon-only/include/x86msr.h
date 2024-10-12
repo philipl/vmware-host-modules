@@ -65,9 +65,9 @@ typedef struct MSRReply {
 
 #pragma pack(push, 1)
 typedef struct MSRQuery {
-   uint32 msrNum;           // IN
-   uint32 numLogicalCPUs;   // IN/OUT
-   MSRReply logicalCPUs[0]; // OUT
+   uint32 msrNum;                                     // IN
+   uint32 numLogicalCPUs;                             // IN/OUT
+   MSRReply logicalCPUs[] COUNTED_BY(numLogicalCPUs); // OUT
 } MSRQuery;
 #pragma pack(pop)
 

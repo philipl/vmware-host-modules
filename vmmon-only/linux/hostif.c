@@ -1176,7 +1176,7 @@ HostIF_LookupUserMPN(VMDriver *vm, // IN: VMDriver
    void *uvAddr = VA64ToPtr(uAddr);
    int retval = PAGE_LOCK_SUCCESS;
 
-   *mpn = PgtblVa2MPN((VA)uvAddr);
+   *mpn = UserVa2MPN((VA)uvAddr);
 
    /*
     * On failure, check whether the page is locked.
@@ -1204,7 +1204,7 @@ HostIF_LookupUserMPN(VMDriver *vm, // IN: VMDriver
             volatile int c;
 
             get_user(c, (char *)uvAddr);
-            *mpn = PgtblVa2MPN((VA)uvAddr);
+            *mpn = UserVa2MPN((VA)uvAddr);
             if (*mpn == entryPtr->mpn) {
 #ifdef VMX86_DEBUG
                printk(KERN_DEBUG "Page %p disappeared from %s(%u)... "
@@ -1409,11 +1409,11 @@ HostIF_UnlockPageByMPN(VMDriver *vm, // IN: VMDriver
 
       /*
        * Verify for debugging that VA and MPN make sense.
-       * PgtblVa2MPN() can fail under high memory pressure.
+       * UserVa2MPN() can fail under high memory pressure.
        */
 
       if (va != NULL) {
-         MPN lookupMpn = PgtblVa2MPN((VA)va);
+         MPN lookupMpn = UserVa2MPN((VA)va);
 
          if (lookupMpn != INVALID_MPN && mpn != lookupMpn) {
             Warning("Page lookup fail %#"FMT64"x %016" FMT64 "x %p\n",
