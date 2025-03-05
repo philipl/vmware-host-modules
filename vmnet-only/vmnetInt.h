@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998,2017,2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -43,7 +43,7 @@
     dev_queue_xmit(skb)                                   \
   )
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0) || defined(RHEL90_BACKPORTS)
 #   define dev_lock_list()    rcu_read_lock()
 #   define dev_unlock_list()  rcu_read_unlock()
 #else

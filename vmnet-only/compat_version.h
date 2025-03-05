@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -135,6 +135,9 @@
 #   endif
 #   if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(8, 5)
 #      define RHEL85_BACKPORTS 1
+#   endif
+#   if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(9, 0)
+#      define RHEL90_BACKPORTS 1
 #   endif
 #   if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(9, 1)
 #      define RHEL91_BACKPORTS 1
