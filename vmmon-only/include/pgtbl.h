@@ -28,7 +28,6 @@
 #include "compat_page.h"
 #include "compat_version.h"
 
-#if COMPAT_LINUX_VERSION_CHECK_LT(4, 10, 0)
 
 /*
  *-----------------------------------------------------------------------------
@@ -48,6 +47,7 @@
  *-----------------------------------------------------------------------------
  */
 
+#if COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) // only used by PgtblVa2MPN() below
 static INLINE MPN
 PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
                   VA addr)              // IN: Address in the virtual address
@@ -89,7 +89,11 @@ PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
          if (pmd_large(*pmd)) {
             mpn = pmd_pfn(*pmd) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
          } else {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,5,0) || defined(RHEL94_BACKPORTS)
+            pte_t *pte = pte_offset_kernel(pmd, addr);
+#else
             pte_t *pte = pte_offset_map(pmd, addr);
+#endif
 
             if (pte_present(*pte) == 0) {
                pte_unmap(pte);
@@ -105,9 +109,30 @@ PgtblVa2MPNLocked(struct mm_struct *mm, // IN: Mm structure of a process
    }
    return mpn;
 }
+#endif
+
+
+/*
+ *-----------------------------------------------------------------------------
+ *
+ * PgtblVa2MPN --
+ *
+ *    Walks through the hardware page tables of the current process to try to
+ *    find the page structure associated to a virtual address.
+ *
+ * Results:
+ *    Same as PgtblVa2MPNLocked()
+ *
+ * Side effects:
+ *    None
+ *
+ *-----------------------------------------------------------------------------
+ */
+
+#if COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0)
 
 static INLINE MPN
-UserVa2MPN(VA addr)  // IN
+PgtblVa2MPN(VA addr)  // IN
 {
    struct mm_struct *mm;
    MPN mpn;
@@ -120,41 +145,24 @@ UserVa2MPN(VA addr)  // IN
    return mpn;
 }
 
-#else
-/*
- *-----------------------------------------------------------------------------
- *
- * UserVa2MPN --
- *
- *    Walks through the hardware page tables of the current process to try to
- *    find the page structure associated to a virtual address.
- *
- * Results:
- *    MPN associated with the given virtual address
- *
- * Side effects:
- *    None
- *
- *-----------------------------------------------------------------------------
- */
+#else /* COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) */
 
 static INLINE MPN
-UserVa2MPN(VA addr)  // IN
+PgtblVa2MPN(VA addr)  // IN
 {
    struct page *page;
    int npages;
    MPN mpn;
 
-   npages = get_user_pages_unlocked(addr, 1, &page, 0);
-   if (npages != 1) {
-      return INVALID_MPN;
-   }
-
+   npages = get_user_pages_unlocked(addr, 1, &page, FOLL_HWPOISON);
+   if (npages != 1)
+	   return INVALID_MPN;
    mpn = page_to_pfn(page);
    put_page(page);
 
    return mpn;
 }
-#endif /* COMPAT_LINUX_VERSION_CHECK_LT(4, 10, 0) */
+
+#endif /* COMPAT_LINUX_VERSION_CHECK_LT(6, 5, 0) */
 
 #endif /* __PGTBL_H__ */

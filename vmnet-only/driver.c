@@ -285,7 +285,7 @@ VNetRemovePortFromList(const VNetPort *port) // IN: port to remove from list
  */
 
 int
-vmnet_init_module(void)
+LinuxDriverInit(void)
 {
    int retval;
 
@@ -347,7 +347,7 @@ err_proto:
 /*
  *----------------------------------------------------------------------
  *
- * vmnet_cleanup_module --
+ * LinuxDriverExit --
  *
  *      Called by /sbin/rmmod.  Unregisters this driver for a
  *      vnet major #, and deinitializes the modules.  The 64-bit
@@ -364,7 +364,7 @@ err_proto:
  */
 
 void
-vmnet_cleanup_module(void)
+LinuxDriverExit(void)
 {
    unregister_chrdev(VNET_MAJOR_NUMBER, "vmnet");
    VNetProtoUnregister();
@@ -1659,5 +1659,5 @@ MODULE_LICENSE("GPL v2");
  * by default (i.e., neither mkinitrd nor modprobe will accept it).
  */
 MODULE_INFO(supported, "external");
-module_init(vmnet_init_module);
-module_exit(vmnet_cleanup_module);
+module_init(LinuxDriverInit);
+module_exit(LinuxDriverExit);
