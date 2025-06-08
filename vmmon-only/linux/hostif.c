@@ -1996,7 +1996,11 @@ HostIF_InitUptime(void)
 void
 HostIF_CleanupUptime(void)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 15, 0)
    del_timer_sync(&uptimeState.timer);
+#else
+   timer_delete_sync(&uptimeState.timer);
+#endif
 }
 
 
