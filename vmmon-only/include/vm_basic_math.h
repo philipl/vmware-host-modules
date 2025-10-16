@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (C) 2008-2017 VMware, Inc. All rights reserved.
+ * Copyright (C) 2008-2017, 2024 VMware, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,14 +48,7 @@ RatioOf(uint32 numer1, uint32 numer2, uint32 denom)
 {
    uint64 numer = (uint64)numer1 * numer2;
    /* Calculate "(numer1 * numer2) / denom" avoiding round-off errors. */
-#if defined(VMM) || !(defined(__i386__) || defined(__x86_64__))
-   return numer / denom;
-#else
-   uint32 ratio;
-   uint32 unused;
-   Div643232(numer, denom, &ratio, &unused);
-   return ratio;
-#endif
+   return (uint32)(numer / denom);
 }
 
 static INLINE uint32

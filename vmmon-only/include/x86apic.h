@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998,2015-2017 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -273,6 +274,7 @@
 #define IOREDTBL_LAST         0x3f
 
 #define IO_APIC_TIMER_PIN               2
+#define IO_APIC_FDC_PIN                 6
 #define IO_APIC_RTC_PIN                 8
 
 #define IO_APIC_REG0_RES2_MASK          0x00FFFFFF

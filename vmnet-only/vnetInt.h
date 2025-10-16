@@ -101,15 +101,11 @@
  */
 typedef int (VNetProcReadFn)(char *page, char **start, off_t off,
                              int count, int *eof, void *data);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 typedef struct VNetProcEntry {
    struct proc_dir_entry *pde;   /* Procfs node entry. */
    void *data;                   /* User data. */
    VNetProcReadFn *fn;           /* Callback fuction to read node. */
 } VNetProcEntry;
-#else
-typedef struct proc_dir_entry VNetProcEntry;
-#endif
 
 typedef struct VNetJack VNetJack;
 typedef struct VNetPort VNetPort;

@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2016-2018,2021-2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 2016-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

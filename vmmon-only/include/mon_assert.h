@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2007-2015,2018,2020,2021 VMware, Inc. All rights reserved.
+ * Copyright (c) 2007-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -115,7 +116,7 @@ typedef struct Assert_Info {
 
 #define ASSERT_NULL_MONSRCLOC     0             // there is never line 0
 
-#if defined(VMM) && !defined(DECODER)
+#if (defined(VMM) || defined(GLM)) && !defined(DECODER)
 /*
  * Assertion information is collected in a non-loadable section
  * named .assert_info.  Each record in this section contains
@@ -179,21 +180,34 @@ extern uint64 bsAssertRIP;
          bsAssertRIP);
 #endif /* VMM_BOOTSTRAP */
 
-#define _ASSERT_PANIC(name)                                              \
+/*
+ * N.B. unlike in ULM, in VMM we simply consume and ignore ASSERT()'s
+ * optional arguments. There's common monitor code that should compile
+ * in both ULM and VMM regardless of whether ASSERT() expands to code
+ * that uses the optional arguments or not.
+ * Hence the `if (0)` statements below.
+ * This should avoid compilation warnings/errors about unused variables
+ * that are passed to ASSERT() and not used in any other way.
+ */
+#define _ASSERT_PANIC(name, fmt, ...)                                    \
    ({COMPILER_MEM_BARRIER();                                             \
+     if (0) { Panic(fmt "\n", ## __VA_ARGS__); }                         \
      ASSERT_RECORDINFO("ud2", AssertType_##name, 0);})
 
-#define _ASSERT_PANIC_NORETURN(name)                                     \
+#define _ASSERT_PANIC_NORETURN(name, fmt, ...)                           \
    ({COMPILER_MEM_BARRIER();                                             \
+     if (0) { Panic(fmt "\n", ## __VA_ARGS__); }                         \
      ASSERT_RECORDINFO("", AssertType_##name, 0);                        \
      __builtin_trap();})
 
-#define _ASSERT_PANIC_BUG(bug, name)                                     \
+#define _ASSERT_PANIC_BUG(bug, name, fmt, ...)                           \
    ({COMPILER_MEM_BARRIER();                                             \
+     if (0) { Panic(fmt "\n", ## __VA_ARGS__); }                         \
      ASSERT_RECORDINFO("ud2", AssertType_##name##Bug, bug);})
 
-#define _ASSERT_PANIC_BUG_NORETURN(bug, name)                            \
+#define _ASSERT_PANIC_BUG_NORETURN(bug, name, fmt, ...)                  \
    ({COMPILER_MEM_BARRIER();                                             \
+     if (0) { Panic(fmt "\n", ## __VA_ARGS__); }                         \
      ASSERT_RECORDINFO("", AssertType_##name##Bug, bug);                 \
      __builtin_trap();})
 #endif

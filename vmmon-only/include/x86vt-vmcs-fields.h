@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2015-2023 Broadcom. All Rights Reserved.
+ * Copyright (c) 2015-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -115,7 +115,7 @@ VMCS_FIELD(VPID,                    0x0000, _S16, _TC,  0,  _C,  _V, _URW,  _S)
 VMCS_FIELD(PI_NOTIFY,               0x0002, _S16, _TC,  1, _NC, _NV,  _NA,  _S)
 VMCS_FIELD(EPTP_INDEX,              0x0004, _S16, _TC,  2, _NC,  _V, _URW, _NS)
 VMCS_UNUSED(                        0x0006, _S16, _TC,  3)
-VMCS_UNUSED(                        0x0008, _S16, _TC,  4)
+VMCS_FIELD(LAST_PID_PTR_IDX,        0x0008, _S16, _TC,  4, _NC, _NV,  _NA,  _S)
 VMCS_UNUSED(                        0x000A, _S16, _TC,  5)
 VMCS_UNUSED(                        0x000C, _S16, _TC,  6)
 VMCS_UNUSED(                        0x000E, _S16, _TC,  7)
@@ -412,14 +412,14 @@ VMCS_FIELD(XSS_EXITING_BITMAP,      0x202C, _S64, _TC, 22, _NC,  _V, _NA,  _S)
 VMCS_FIELD(ENCLS_EXITING_BITMAP,    0x202E, _S64, _TC, 23, _NC,  _V, _NA,  _S)
 VMCS_UNUSED(                        0x2030, _S64, _TC, 24)
 VMCS_FIELD(TSC_MULTIPLIER,          0x2032, _S64, _TC, 25, _NC, _NV, _NA,  _S)
-VMCS_UNUSED(                        0x2034, _S64, _TC, 26)
+VMCS_FIELD(3RD_VMEXEC_CTL,          0x2034, _S64, _TC, 26, _NC, _NV, _NA,  _S)
 VMCS_FIELD(ENCLV_EXITING_BITMAP,    0x2036, _S64, _TC, 27, _NC, _NV, _NA,  _S)
 VMCS_FIELD(LOW_PASID_DIR,           0x2038, _S64, _TC, 28, _NC, _NV, _NA,  _S)
 VMCS_FIELD(HIGH_PASID_DIR,          0x203A, _S64, _TC, 29, _NC, _NV, _NA,  _S)
 VMCS_FIELD(SHARED_EPTP,             0x203C, _S64, _TC, 30, _NC, _NV, _NA, _NS)
 VMCS_UNUSED(                        0x203E, _S64, _TC, 31)
 VMCS_UNUSED(                        0x2040, _S64, _TC, 32)
-VMCS_UNUSED(                        0x2042, _S64, _TC, 33)
+VMCS_FIELD(PID_PTR_TABLE_ADDR,      0x2042, _S64, _TC, 33, _NC, _NV, _NA,  _S)
 VMCS_FIELD(2ND_VMEXIT_CTL,          0x2044, _S64, _TC, 34, _NC,  _V, _NA,  _S)
 VMCS_UNUSED(                        0x2046, _S64, _TC, 35)
 VMCS_UNUSED(                        0x2048, _S64, _TC, 36)

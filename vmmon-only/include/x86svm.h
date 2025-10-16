@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2005-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2005-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -129,12 +129,18 @@
 #define SVM_VMCB_EXEC_CTL2_PCID            0x00000004
 #define SVM_VMCB_EXEC_CTL2_MCOMMIT         0x00000008
 #define SVM_VMCB_EXEC_CTL2_TLBSYNC         0x00000010
-#define SVM_VMCB_EXEC_CTL2_RSVD            0xffffffe0
+#define SVM_VMCB_EXEC_CTL2_BUS_LOCK        0x00000020
+#define SVM_VMCB_EXEC_CTL2_IDLE_HLT        0x00000040
 
 /* VMCB.tlbCtl */
 #define SVM_VMCB_TLB_CTL_FLUSH              0x01
 #define SVM_VMCB_TLB_CTL_FLUSH_ONLY_CURRENT 0x02
 #define SVM_VMCB_TLB_CTL_FLUSH_KEEP_GLOBALS 0x04
+
+/* VMCB.erapCtl */
+#define SVM_VMCB_ALLOW_LARGER_RAP           0x01
+#define SVM_VMCB_FLUSH_RAP_ON_VMRUN         0x02
+#define SVM_VMCB_LEGACY_RAP_SIZE            32
 
 /* VMCB.vAPIC */
 #define SVM_VMCB_APIC_VTPR_MASK            0x00000000000000ffULL
@@ -287,9 +293,16 @@
 #define SVM_EXITCODE_XSETBV               141
 #define SVM_EXITCODE_EFER_WRITE_TRAP      143
 #define SVM_EXITCODE_CR_WRITE_TRAP(n)    (144 + (n))
+#define SVM_EXITCODE_INVLPGB              160
+#define SVM_EXITCODE_INVLPGB_ILLEGAL      161
+#define SVM_EXITCODE_INVLPCID             162
+#define SVM_EXITCODE_MCOMMIT              163
+#define SVM_EXITCODE_TLBSYNC              164
+#define SVM_EXITCODE_BUSLOCK              165
+#define SVM_EXITCODE_IDLE_HLT             166
 /* Adjust SVM_LAST_LO_EXIT_REASON if you add a high exit reason. */
 #define SVM_FIRST_LO_EXIT_REASON 0
-#define SVM_LAST_LO_EXIT_REASON  159
+#define SVM_LAST_LO_EXIT_REASON  166
 #define SVM_NUM_LO_EXIT_REASONS  (SVM_LAST_LO_EXIT_REASON + 1 - \
                                   SVM_FIRST_LO_EXIT_REASON)
 
@@ -582,8 +595,8 @@ SVM_LockedFromFeatures(uint64 vmCR)
    return (vmCR & MSR_VM_CR_SVM_LOCK) != 0;
 }
 
-#if defined(FROBOS) || defined(VMKERNEL) || \
-    defined(VMM) || defined(VMMON)
+#if defined(FROBOS) || defined(VMKERNEL) ||             \
+    defined(VMM) || defined(GLM) || defined(VMMON)
 /*
  *----------------------------------------------------------------------
  * SVM_EnabledCPU --
@@ -600,7 +613,7 @@ SVM_EnabledCPU(void)
 #endif
 
 
-#ifndef VMM
+#if !defined(VMM) && !defined(GLM)
 #ifdef VM_X86_ANY
 /*
  *----------------------------------------------------------------------

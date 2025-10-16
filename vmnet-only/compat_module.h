@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2007 VMware, Inc. All rights reserved.
+ * Copyright (c) 2007-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -69,15 +70,6 @@ static const char __module_cat(tag, __LINE__)[]                               \
 #define MODULE_VERSION(_version) MODULE_INFO(version, _version)
 #endif
 
-/*
- * Linux kernel < 2.6.31 takes 'int' for 'bool' module parameters.
- * Linux kernel >= 3.3.0 takes 'bool' for 'bool' module parameters.
- * Kernels between the two take either.  So flip switch at 3.0.0.
- */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
-   typedef bool compat_mod_param_bool;
-#else
-   typedef int compat_mod_param_bool;
-#endif
+typedef bool compat_mod_param_bool;
 
 #endif /* __COMPAT_MODULE_H__ */

@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998-2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -105,7 +106,8 @@ GET_CURRENT_PC(void)
  * fxrstor, on both AMD Opteron and Intel Core CPUs.
  */
 
-#if defined(VMM) || defined(VMKERNEL) || defined(FROBOS) || defined(ULM)
+#if defined(VMM)  || defined(GLM) || defined(VMKERNEL) ||       \
+    defined(FROBOS) || defined(ULM)
 static INLINE void
 FXSAVE_ES1(void *save)
 {
@@ -331,7 +333,8 @@ XRSTORS(const void *load, uint64 mask)
  *  constraints.
  *
  */
-#if (defined(VMM) || defined(VMKERNEL) || defined(FROBOS) || defined(ULM))
+#if (defined(VMM) || defined(GLM) || defined(VMKERNEL) ||       \
+     defined(FROBOS) || defined(ULM))
 static INLINE Bool
 xtest(void)
 {

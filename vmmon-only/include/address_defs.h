@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2014-2021 VMware, Inc. All rights reserved.
+ * Copyright (c) 2014-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -101,6 +102,34 @@ IsGoodMPNOrMemref(MPN mpn)
    return IsGoodMPN(mpn) || mpn == MEMREF_MPN;
 }
 
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * IsCorruptedMPN --
+ *
+ *      Is the given MPN corrupted?
+ *
+ * Results:
+ *      Return TRUE if "mpn" is corrupted.
+ *
+ * Side effects:
+ *      None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static INLINE Bool
+IsCorruptedMPN(MPN mpn)
+{
+   return mpn == ECC_CORRUPTED_MPN;
+}
+
+static INLINE Bool
+IsGoodOrCorruptedMPNOrMemref(MPN mpn)
+{
+   return IsGoodMPN(mpn) || IsCorruptedMPN(mpn) || mpn == MEMREF_MPN;
+}
 
 #if defined __cplusplus
 } // extern "C"

@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (c) 1998-2014,2016,2018-2020,2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -197,8 +198,10 @@ NPTEIsValid(VM_PAE_PTE npte, PT_Level level, Bool nxOn, unsigned depth,
  * x86-64 architecture allows 57 bits of virtual address space if 5-level
  * paging is enabled.
  */
-#define VA64_L5_IMPL_BITS          57
-#define VA64_L5_IMPL_MASK          ((CONST64U(1) << VA64_L5_IMPL_BITS) - 1)
+#define VA64_L5_IMPL_BITS            57
+#define VA64_L5_IMPL_MASK            ((CONST64U(1) << VA64_L5_IMPL_BITS) - 1)
+#define VA64_L5_CANONICAL_MASK       ~((CONST64U(1) << (VA64_L5_IMPL_BITS - 1)) - 1)
+#define VA64_L5_CANONICAL_HOLE_START (CONST64U(1) << (VA64_L5_IMPL_BITS - 1))
 
 static INLINE Bool
 x86IsCanonicalC(VA64 va)

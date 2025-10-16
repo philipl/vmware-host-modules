@@ -70,7 +70,7 @@ extern "C" {
 
 
 #define EXTRACT_FIELD(msr, basename) \
-   (((msr) >> basename ## _SHIFT) & basename ## _MASK)
+   (((msr) >> basename ## _SHIFT) & (unsigned)basename ## _MASK)
 
 #define INSERT_FIELD(msr, basename, val) \
    (((msr) & ~((uint64)(basename ## _MASK) << basename ## _SHIFT)) |    \

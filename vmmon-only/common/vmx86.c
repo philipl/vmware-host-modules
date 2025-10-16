@@ -50,11 +50,7 @@
 #include "x86svm.h"
 #include "x86cpuid_asm.h"
 #if defined(__linux__)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 8, 0)
-#include <asm/timex.h>
-#else
 #include <linux/timex.h>
-#endif
 #endif
 #include "perfctr.h"
 #include "x86vtinstr.h"

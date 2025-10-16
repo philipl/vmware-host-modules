@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2017 VMware, Inc. All rights reserved.
+ * Copyright (c) 2002-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,24 +17,26 @@
  *
  *********************************************************/
 
+#ifndef __COMPAT_TIMER_H__
+#   define __COMPAT_TIMER_H__
 
-/*
- * Detect whether there is netif_trans_update, which got introduced from 4.7.0
- * Older kernels may have this function backported by vendors.
- */
+#define compat_del_timer_sync(timer) del_timer_sync(timer)
 
-#include "compat_version.h"
-#include "compat_autoconf.h"
+#include <linux/delay.h>
+#define compat_msleep_interruptible(msecs) msleep_interruptible(msecs)
+#define compat_msleep(msecs) msleep(msecs)
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
-#   error This compile test intentionally fails.
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
-#include <linux/netdevice.h>
+#define compat_init_timer_deferrable(timer) init_timer_deferrable(timer)
 
-void test_netif_trans_update(struct net_device *dev)
+#define compat_setup_timer(timer, function, data) \
+       setup_timer(timer, function, data)
+
+#if TIMER_DELETE_SYNC_MISSING
+static inline int timer_delete_sync(struct timer_list *timer)
 {
-   netif_trans_update(dev);
+   return del_timer_sync(timer);
 }
-
 #endif
 
+
+#endif /* __COMPAT_TIMER_H__ */

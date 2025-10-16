@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2004-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2004-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -193,6 +193,8 @@
 #define  VT_VMCS_ID_SANDYBRIDGE  16
 #define  VT_VMCS_ID_HASWELL      18
 #define  VT_VMCS_ID_TREMONT      19
+#define  VT_VMCS_ID_CWF          21
+#define  VT_VMCS_ID_KVM          300252880
 
 enum {
 #define VMCS_FIELD(_name, _val, ...) VT_VMCS_##_name = _val,
@@ -357,7 +359,12 @@ enum {
    VMX_CPU3(PAGING_WRITE,        2)                      \
    VMX_CPU3(GUEST_PAGING_VERIF,  3)                      \
    VMX_CPU3(IPI_VIRTUALIZATION,  4)                      \
+   VMX_CPU3(EPT_GPA_SHARED_BIT,  5)                      \
+   VMX_CPU3(MSRLIST,             6)                      \
    VMX_CPU3(VIRT_SPEC_CTRL,      7)                      \
+   VMX_CPU3(VIRT_APIC_TIMER,     8)                      \
+   VMX_CPU3(PBNDKB,              9)                      \
+   VMX_CPU3(PEBS2GPA,           12)                      \
 
 #define VMX_PROCBASED_CTLS3_CAP                          \
         VMX_PROCBASED_CTLS3_CAP_NDA                      \
@@ -795,6 +802,8 @@ enum {
     VT_VMCS_2ND_VMEXEC_CTL_XSAVES                    | \
     VT_VMCS_2ND_VMEXEC_CTL_UNRESTRICTED)
 
+#define VT_DEFAULT_PROCBASED_CTLS3                   0
+
 #define VT_REQUIRED_EXIT_CTLS                          \
    (VT_EXIT_CTLS_DEFAULT1                            | \
     VT_VMCS_VMEXIT_CTL_LOAD_EFER                     | \
@@ -1196,8 +1205,8 @@ VT_PasidTransSupportedFromFeatures(uint64 secondary)
 
 #if !defined(VM_ARM_64) /* PR 2822467 */ &&                     \
     (defined(DECODER) || defined(FROBOS) || defined(ULM) ||     \
-     defined(VMKBOOT) || defined(VMKERNEL) || defined(VMM) ||   \
-     defined(VMMON)) /* { */
+     defined(VMKBOOT) || defined(VMKERNEL) ||                   \
+     defined(VMM) || defined(GLM) || defined(VMMON)) /* { */
 /*
  *----------------------------------------------------------------------
  *
@@ -1245,7 +1254,7 @@ VT_SupportedCPU(void)
 
 #endif /* } !defined(USERLEVEL) */
 
-#if !defined(VMM) /* { */
+#if !defined(VMM) && !defined(GLM) /* { */
 #ifdef VM_X86_ANY
 /*
  *----------------------------------------------------------------------
@@ -1260,7 +1269,7 @@ VT_CapableCPU(void)
    return CPUID_ISSET(1, ECX, VMX, __GET_ECX_FROM_CPUID(1));
 }
 #endif
-#endif /* } !defined(VMM) */
+#endif
 
 
 /*

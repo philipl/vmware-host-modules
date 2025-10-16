@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2002 VMware, Inc. All rights reserved.
+ * Copyright (c) 2002-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,20 +23,6 @@
 
 #include <linux/mm.h>
 #include <asm/page.h>
-
-
-/* The pfn_to_page() API appeared in 2.5.14 and changed to function during 2.6.x */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0) && !defined(pfn_to_page)
-#   define pfn_to_page(_pfn) (mem_map + (_pfn))
-#   define page_to_pfn(_page) ((_page) - mem_map)
-#endif
-
-
-/* The virt_to_page() API appeared in 2.4.0 --hpreg */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 0) && !defined(virt_to_page)
-#   define virt_to_page(_kvAddr) pfn_to_page(MAP_NR(_kvAddr))
-#endif
-
 
 /*
  * The get_order() API appeared at some point in 2.3.x, and was then backported

@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -39,9 +39,7 @@
 #   include <linux/string.h> /* memset() in the kernel */
 
 #   define EXPORT_SYMTAB
-#   if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
-#      define LINUX_GDT_IS_RO
-#   endif
+#   define LINUX_GDT_IS_RO
 #else
 #   include <string.h>
 #endif

@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -82,6 +82,29 @@
 #endif /* __GNUC__ >= 9 */
 #else
 #define ASSERT_ON_COMPILE_SELECTOR_SIZE(expr)
+#endif
+
+
+/*
+ * CFI_ADJUST_CFA_OFFSET:
+ *
+ * This is a best-effort attempt to fix the CFI information for inline
+ * assembly functions that modify rsp. Assuming that the current CFI
+ * register is rsp, pushing to the stack adjusts the offset of the CFA from
+ * rsp by 8 bytes.
+ *
+ * However, this may not be true in all cases: despite compiling with
+ * -fomit-frame-pointer, some functions in the kernel still use rbp. A full
+ * fix to this problem is being tracked by VMKC-1186.
+ *
+ * Since this is only a best-effort attempt for now, only emit CFI
+ * directives for kernel code and only if GCC is currently doing so.
+ * Notably, frobos is compiled without `.eh_frame`: see `FROBOS_CC_FLAGS`.
+ */
+#if defined(VMKERNEL) && defined(__GCC_HAVE_DWARF2_CFI_ASM)
+#define CFI_ADJUST_CFA_OFFSET(offset) ".cfi_adjust_cfa_offset " #offset "\n"
+#else
+#define CFI_ADJUST_CFA_OFFSET(_offset)
 #endif
 
 
@@ -307,8 +330,10 @@ static inline void
 _Set_flags(uintptr_t f)
 {
    __asm__ __volatile__(
-      "push %0" "\n\t"
-      "popf"
+      "push %0\n"
+      CFI_ADJUST_CFA_OFFSET(8)
+      "popf\n"
+      CFI_ADJUST_CFA_OFFSET(-8)
       :
       : "g" (f)
       : "memory", "cc"
@@ -328,8 +353,10 @@ _Get_flags(void)
    uintptr_t result;
 
    __asm__ __volatile__(
-      "pushf"  "\n\t"
-      "pop %0"
+      "pushf\n"
+      CFI_ADJUST_CFA_OFFSET(8)
+      "pop %0\n"
+      CFI_ADJUST_CFA_OFFSET(-8)
       : "=rm" (result)
       :
       : "memory"
@@ -603,7 +630,8 @@ RDPMC(int counter)
 }
 
 
-#if defined(VMM) || defined(VMKERNEL) || defined(FROBOS) || defined (ULM)
+#if defined(VMM) || defined(GLM) || defined(VMKERNEL) ||        \
+    defined(FROBOS) || defined (ULM)
 static inline uint64
 __XGETBV(int cx)
 {

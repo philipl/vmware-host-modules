@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (c) 2015-2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 2015-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -197,9 +198,15 @@ MonLoaderIsMapped(MonLoaderContext *ctx,    // IN/OUT
  */
 static MonLoaderError
 MonLoaderAllocMPN(MonLoaderContext *ctx, // IN
+                  Bool bspOnly,          // IN
                   MPN *mpn)              // OUT
 {
+#ifdef VMX86_SERVER
+   OvhdMemSource src = bspOnly ? OvhdMon_Bootstrap : OvhdMon_BaseWired;
+   *mpn = MonLoaderCallout_AllocMPN(ctx->envCtx, ctx->vcpu.currentVCPU, src);
+#else
    *mpn = MonLoaderCallout_AllocMPN(ctx->envCtx, ctx->vcpu.currentVCPU);
+#endif
    if (*mpn == INVALID_MPN) {
       return ML_ERROR_ALLOC;
    }
@@ -493,6 +500,7 @@ MonLoaderZero(MonLoaderContext *ctx,      // IN/OUT
               VPN               monVPN,   // IN
               uint64            numPages, // IN
               uint64            monPages, // IN
+              Bool              bspOnly,  // IN
               unsigned         *allocs)   // IN/OUT
 {
    uint64 i;
@@ -502,7 +510,7 @@ MonLoaderZero(MonLoaderContext *ctx,      // IN/OUT
    }
    for (i = 0; i < numPages; i++) {
       MPN mpn;
-      MonLoaderError ret = MonLoaderAllocMPN(ctx, &mpn);
+      MonLoaderError ret = MonLoaderAllocMPN(ctx, bspOnly, &mpn);
       if (ret != ML_OK) {
          return ret;
       }
@@ -543,6 +551,7 @@ MonLoaderCopyFromBlob(MonLoaderContext *ctx,        // IN/OUT
                       uint64            monBytes,   // IN
                       uint64            blobOffset, // IN
                       uint64            blobSize,   // IN
+                      Bool              bspOnly,    // IN
                       unsigned         *allocs)     // IN/OUT
 {
    uint64 bytesLeft = blobSize;
@@ -554,7 +563,7 @@ MonLoaderCopyFromBlob(MonLoaderContext *ctx,        // IN/OUT
       MPN mpn;
       uint64 toCopy = MIN(bytesLeft, PAGE_SIZE);
 
-      MonLoaderError ret = MonLoaderAllocMPN(ctx, &mpn);
+      MonLoaderError ret = MonLoaderAllocMPN(ctx, bspOnly, &mpn);
       if (ret != ML_OK) {
          return ret;
       }
@@ -816,7 +825,7 @@ MonLoader_Process(MonLoaderHeader  *header,   // IN/OUT
          uint64               monPages   = entry->monPages;
          uint64               monBytes   = PAGES_2_BYTES(monPages);
          uint64               subIndex   = entry->subIndex;
-         uint64               bspOnly    = entry->bspOnly;
+         Bool                 bspOnly    = entry->bspOnly;
          *line = i;
 
          /*
@@ -863,14 +872,14 @@ MonLoader_Process(MonLoaderHeader  *header,   // IN/OUT
                   break;
                }
                ret = MonLoaderZero(&ctx, flags, monVPN, numPages, monPages,
-                                   &entry->allocs);
+                                   bspOnly, &entry->allocs);
                break;
             }
             case ML_CONTENT_COPY:
                switch (source) {
                   case ML_SOURCE_BLOB:
                      ret = MonLoaderCopyFromBlob(&ctx, flags, monVPN, monBytes,
-                                                 blobOffset, blobSize,
+                                                 blobOffset, blobSize, bspOnly,
                                                  &entry->allocs);
                      break;
                   default:

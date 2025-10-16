@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2003-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2003-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -127,11 +127,19 @@ Max(int a, int b)
 #define ROUNDDOWNBITS(x, bits) ((uintptr_t)(x) & ~MASK(bits))
 #define CEILING(x, y)          (((x) + (y) - 1) / (y))
 
-#if defined VMKERNEL || defined VMKBOOT
+#if !defined CEIL
 # define CEIL(_a, _b)        CEILING(_a, _b)
+#endif
+#if !defined FLOOR
 # define FLOOR(_a, _b)       ((_a)/(_b))
+#endif
+#if !defined ALIGN_DOWN
 # define ALIGN_DOWN(_a, _b)  ROUNDDOWN(_a, _b)
+#endif
+#if !defined(ALIGN_UP)
 # define ALIGN_UP(_a, _b)    ROUNDUP(_a, _b)
+#endif
+#if !defined(IS_ALIGNED)
 # define IS_ALIGNED(_a, _b)  (ALIGN_DOWN(_a, _b) == _a)
 #endif
 
@@ -235,7 +243,7 @@ Max(int a, int b)
    #define VMW_PAGE_SHIFT PAGE_SHIFT_4KB
    #define VMW_PAGE_SIZE  PAGE_SIZE_4KB
 #else
-   #error
+   #error Could not determine page size information for this compiler.
 #endif
 
 #ifndef PAGE_SHIFT
@@ -270,12 +278,20 @@ Max(int a, int b)
 #define BYTES_2_PAGES(_nbytes)  ((_nbytes) >> PAGE_SHIFT)
 #endif
 
+#ifndef ROUNDUP_BYTES_2_PAGES
+#define ROUNDUP_BYTES_2_PAGES(_nbytes) VM_PAGES_SPANNED(0, (_nbytes))
+#endif
+
 #ifndef BYTES_2_PAGES_4KB
 #define BYTES_2_PAGES_4KB(_nbytes)  ((_nbytes) >> PAGE_SHIFT_4KB)
 #endif
 
 #ifndef PAGES_2_BYTES
 #define PAGES_2_BYTES(_npages)  (((uint64)(_npages)) << PAGE_SHIFT)
+#endif
+
+#ifndef PAGES_2_BYTES_4KB
+#define PAGES_2_BYTES_4KB(_npages)  (((uint64)(_npages)) << PAGE_SHIFT_4KB)
 #endif
 
 #ifndef VM_PAGE_BASE
@@ -286,6 +302,13 @@ Max(int a, int b)
 #define VM_PAGES_SPANNED(_addr, _size) \
    (BYTES_2_PAGES(PAGE_OFFSET(_addr) + PAGE_OFFSET(_size) + (PAGE_SIZE - 1)) + \
     BYTES_2_PAGES(_size))
+#endif
+
+#ifndef VM_PAGES_SPANNED_4KB
+#define VM_PAGES_SPANNED_4KB(_addr, _size) \
+   (BYTES_2_PAGES_4KB(PAGE_OFFSET_4KB(_addr) + PAGE_OFFSET_4KB(_size) + \
+                      (PAGE_SIZE_4KB - 1)) + \
+    BYTES_2_PAGES_4KB(_size))
 #endif
 
 #ifndef KBYTES_SHIFT
@@ -576,9 +599,9 @@ typedef int pid_t;
 #define VMK_HAS_VMM_ONLY(...)
 #endif
 
-#if defined VMM || defined VMK_HAS_VMM
+#if defined VMM || defined GLM || defined VMK_HAS_VMM
 /* Structure field only used to support the VMM (as opposed to the ULM). */
-#define VMM_ONLY_FIELD(name) name
+#define VMM_GLM_ONLY_FIELD(name) name
 #else
 /*
  * Structure field only used to support the VMM (as opposed to the ULM).
@@ -586,14 +609,32 @@ typedef int pid_t;
  * is unchanged (was bug 3354277), but prepend an underscore to the field's
  * name to verify at compile time that the field is indeed not used.
  */
-#define VMM_ONLY_FIELD(name) _##name
+#define VMM_GLM_ONLY_FIELD(name) _##name
 #endif
 
 #undef ARM64_ONLY
+#if defined(_MSC_VER)
+/*
+ * Old MSVC versions (such as MSVC 14.29.30133, used to build Workstation's
+ * offset checker) are notorious to have non-standard __VA_ARGS__ handling.
+ * The current latest Visual Studio 2022 17.10 (MSVC 19.40/_MSC_VER 1940)
+ * has not fixed the defect yet.
+ */
+#if defined(VMX86_DESKTOP) && (_MSC_VER > 1940)
+#pragma message("ERROR: Compiler version: " XSTR(_MSC_VER))
+#pragma message("ERROR: PR 3405101: Is __VA_ARGS__ hack needed for Arm & x86?")
+#endif
+#ifdef VM_ARM_64
+#define ARM64_ONLY(x) x
+#else
+#define ARM64_ONLY(x)
+#endif
+#else
 #ifdef VM_ARM_64
 #define ARM64_ONLY(...)  __VA_ARGS__
 #else
 #define ARM64_ONLY(...)
+#endif
 #endif
 
 #undef X86_ONLY
@@ -601,7 +642,13 @@ typedef int pid_t;
 /*
  * Old MSVC versions (such as MSVC 14.29.30133, used to build Workstation's
  * offset checker) are notorious to have non-standard __VA_ARGS__ handling.
+ * The current latest Visual Studio 2022 17.10 (MSVC 19.40/_MSC_VER 1940)
+ * has not fixed the defect yet.
  */
+#if defined(VMX86_DESKTOP) && (_MSC_VER > 1940)
+#pragma message("ERROR: Compiler version: " XSTR(_MSC_VER))
+#pragma message("ERROR: PR 3405101: Is __VA_ARGS__ hack needed for Arm & x86?")
+#endif
 #ifdef VM_X86_ANY
 #define X86_ONLY(x)      x
 #else
@@ -760,6 +807,12 @@ typedef int pid_t;
 #define VMM_ONLY(x)
 #endif
 
+#ifdef GLM
+#define vmw_glm 1
+#else
+#define vmw_glm 0
+#endif
+
 #ifdef VMX86_VMX
 #define vmx86_vmx 1
 #else
@@ -790,21 +843,27 @@ typedef int pid_t;
 #else
 #define ulm_esx 0
 #endif
+#ifdef ULM_LIN
+#define ulm_lin 1
+#else
+#define ulm_lin 0
+#endif
 #else
 #define vmx86_ulm 0
 #define ulm_mac 0
 #define ulm_win 0
 #define ulm_esx 0
+#define ulm_lin 0
 #define ULM_ONLY(x)
 #endif
 
-#if defined(VMM) || defined(ULM)
+#if defined(VMM) || defined(GLM) || defined(ULM)
 #define MONITOR_ONLY(x) x
 #else
 #define MONITOR_ONLY(x)
 #endif
 
-#if defined(VMM) || defined(VMKERNEL)
+#if defined(VMM) || defined(GLM) || defined(VMKERNEL)
 #define USER_ONLY(x)
 #else
 #define USER_ONLY(x) x
@@ -960,18 +1019,35 @@ typedef int pid_t;
 #define VMW_CLANG_ANALYZER_NORETURN() ((void)0)
 #endif
 
-/* VMW_FALLTHROUGH
+/*
+ * VMW_FALLTHROUGH
  *
  *   Instructs capable compilers to not warn when a case label of a
  *   'switch' statement falls through to the next label.
  *
  *   If not a matched compiler, expands to nothing.
  */
-#if (defined(__GNUC__) && (__GNUC__ >= 9)) ||           \
-    (defined(__clang__) && (__clang_major__ >= 13))
-#define VMW_FALLTHROUGH() __attribute__((fallthrough))
+#if defined __cplusplus && __cplusplus >= 201703L
+   #define VMW_FALLTHROUGH() [[fallthrough]]
+#elif (defined(__GNUC__) && (__GNUC__ >= 9)) ||           \
+      (defined(__clang__) && (__clang_major__ >= 13))
+   #define VMW_FALLTHROUGH() __attribute__((fallthrough))
 #else
-#define VMW_FALLTHROUGH()
+   #define VMW_FALLTHROUGH()
 #endif
+
+
+/*
+ * VMW_CLANG_SUPPRESS
+ *
+ *   Instructs clang static analyzer to suppress unwanted warnings related to the code
+ *   block following this macro.
+ */
+#if defined(__clang__) && (__clang_major__ >= 18)
+   #define VMW_CLANG_SUPPRESS [[clang::suppress]]
+#else
+   #define VMW_CLANG_SUPPRESS
+#endif
+
 
 #endif // ifndef _VM_BASIC_DEFS_H_

@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2009 VMware, Inc. All rights reserved.
+ * Copyright (c) 2009-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,11 +32,6 @@
 #   error "Include compat_version.h before compat_autoconf.h"
 #endif
 
-/* autoconf.h moved from linux/autoconf.h to generated/autoconf.h in 2.6.33-rc1. */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
-#   include <linux/autoconf.h>
-#else
-#   include <generated/autoconf.h>
-#endif
+#include <generated/autoconf.h>
 
 #endif /* __COMPAT_AUTOCONF_H__ */

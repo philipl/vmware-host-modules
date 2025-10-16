@@ -33,12 +33,10 @@ SRCROOT = .
 #
 INCLUDE      :=
 ifdef OVT_SOURCE_DIR
-AUTOCONF_DIR := $(OVT_SOURCE_DIR)/modules/linux/shared/autoconf
 VMLIB_PATH   = $(OVT_SOURCE_DIR)/lib/$(1)
 INCLUDE      += -I$(OVT_SOURCE_DIR)/modules/linux/shared
 INCLUDE      += -I$(OVT_SOURCE_DIR)/lib/include
 else
-AUTOCONF_DIR := $(SRCROOT)/shared/autoconf
 INCLUDE      += -I$(SRCROOT)/shared
 endif
 
@@ -63,6 +61,7 @@ GREP = /bin/grep
 vm_check_gcc = $(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null \
         > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi)
 vm_check_file = $(shell if test -f $(1); then echo "yes"; else echo "no"; fi)
+vm_check_dir = $(shell if test -d $(1); then echo "yes"; else echo "no"; fi)
 
 ifndef VM_KBUILD
 VM_KBUILD := no
@@ -106,6 +105,36 @@ DIRVAR := M
 endif
 
 #
+# It seems that some distros do weird things with kernel headers:
+# try to figure out the proper header placement
+ifeq ($(call vm_check_dir,$(HEADER_DIR)/linux), yes)
+KERNEL_HEADER_DIR := $(HEADER_DIR)
+else
+KERNEL_HEADER_DIR := /lib/modules/$(VM_UNAME)/source/include
+endif
+
+ifeq ($(call vm_check_dir,$(KERNEL_HEADER_DIR)/linux), no)
+$(warning ---------------------------------------------------------)
+$(warning The kernel header directory seems invalid)
+$(warning Tried: $(KERNEL_HEADER_DIR) and $(HEADER_DIR))
+$(warning Please make sure linux kernel headers are installed)
+$(warning Alternatively set LINUXINCLUDE to point to the correct path)
+$(warning ---------------------------------------------------------)
+endif
+
+#
+# Trivial define to check whether a given header has a given function
+# and if so report it as missing in the passed name:
+# Args:
+#     $(1) - kernel header file
+#     $(2) - string to grep for
+#     $(3) - the define name to use as a missing arg
+check_func = "-D$(3)=$(shell grep $(2) \
+	$(KERNEL_HEADER_DIR)/$(1) >/dev/null 2>&1; echo $$?) "
+
+VMW_CFLAGS := $(call check_func,linux/timer.h,"int timer_delete_sync",TIMER_DELETE_SYNC_MISSING)
+
+#
 # Define a setup target that gets built before the actual driver.
 # This target may not be used at all, but if it is then it will be defined
 # in Makefile.kernel
@@ -115,7 +144,7 @@ postbuild:: ;
 
 $(DRIVER_KO): prebuild
 	$(MAKE) -C $(BUILD_DIR) $(DIRVAR)=$$PWD SRCROOT=$$PWD/$(SRCROOT) \
-	  MODULEBUILDDIR=$(MODULEBUILDDIR) modules
+	  VMW_CFLAGS=$(VMW_CFLAGS) MODULEBUILDDIR=$(MODULEBUILDDIR) V=1 modules
 	$(MAKE) -C $$PWD SRCROOT=$$PWD/$(SRCROOT) \
 	  MODULEBUILDDIR=$(MODULEBUILDDIR) postbuild
 endif

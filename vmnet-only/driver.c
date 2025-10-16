@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -268,7 +268,7 @@ VNetRemovePortFromList(const VNetPort *port) // IN: port to remove from list
 /*
  *----------------------------------------------------------------------
  *
- * init_module --
+ * VNetInitModule --
  *
  *      linux module entry point. Called by /sbin/insmod command.
  *      Initializes module and Registers this driver for a
@@ -284,8 +284,8 @@ VNetRemovePortFromList(const VNetPort *port) // IN: port to remove from list
  *----------------------------------------------------------------------
  */
 
-int
-init_module(void)
+static int
+VNetInitModule(void)
 {
    int retval;
 
@@ -347,7 +347,7 @@ err_proto:
 /*
  *----------------------------------------------------------------------
  *
- * cleanup_module --
+ * VNetCleanupModule --
  *
  *      Called by /sbin/rmmod.  Unregisters this driver for a
  *      vnet major #, and deinitializes the modules.  The 64-bit
@@ -363,8 +363,8 @@ err_proto:
  *----------------------------------------------------------------------
  */
 
-void
-cleanup_module(void)
+static void
+VNetCleanupModule(void)
 {
    unregister_chrdev(VNET_MAJOR_NUMBER, "vmnet");
    VNetProtoUnregister();
@@ -1659,3 +1659,5 @@ MODULE_LICENSE("GPL v2");
  * by default (i.e., neither mkinitrd nor modprobe will accept it).
  */
 MODULE_INFO(supported, "external");
+module_init(VNetInitModule);
+module_exit(VNetCleanupModule);

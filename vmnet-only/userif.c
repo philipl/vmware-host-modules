@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998,2017,2019-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998,2017,2019-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -78,10 +78,6 @@ static int  VNetUserIfSetupNotify(VNetUserIF *userIf, VNet_Notify *vn);
 static int  VNetUserIfSetUplinkState(VNetPort *port, uint8 linkUp);
 extern unsigned int  vnet_max_qlen;
 
-#if COMPAT_LINUX_VERSION_CHECK_LT(3, 2, 0)
-#   define skb_frag_page(frag) (frag)->page
-#   define skb_frag_size(frag) (frag)->size
-#endif
 #if COMPAT_LINUX_VERSION_CHECK_LT(5, 4, 0) && \
     !(defined(CONFIG_SUSE_VERSION) && CONFIG_SUSE_VERSION == 15 && \
       defined(CONFIG_SUSE_PATCHLEVEL) && CONFIG_SUSE_PATCHLEVEL >= 2)
@@ -509,14 +505,10 @@ VNetCopyDatagram(const struct sk_buff *skb,	// IN: skb to copy
       .iov_base = buf,
       .iov_len  = len,
    };
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
-   return skb_copy_datagram_iovec(skb, 0, &iov, len);
-#else
    struct iov_iter ioviter;
 
    iov_iter_init(&ioviter, READ, &iov, 1, len);
    return skb_copy_datagram_iter(skb, 0, &ioviter, len);
-#endif
 }
 
 
@@ -551,13 +543,11 @@ VNetCsumAndCopyToUser(const void *src,   // IN: Source
    csum = csum_and_copy_to_user(src, dst, len);
    *err = (csum == 0) ? -EFAULT : 0;
 #else
-   if (!user_access_begin(dst, len)) {
+   csum = csum_partial(src, len, ~0U);
+
+   if (copy_to_user(dst, src, len)) {
       *err = -EFAULT;
-      csum = 0;
-   } else {
-      *err = 0;
-      csum = csum_partial_copy_nocheck(src, dst, len);
-      user_access_end();
+      return 0;
    }
 #endif
    return csum;

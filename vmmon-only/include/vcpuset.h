@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (c) 2002-2021 VMware, Inc. All rights reserved.
+ * Copyright (c) 2002-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -45,7 +46,7 @@
     defined VMSS2CORE || defined FROBOS || defined DIS16
 #   include <stdio.h>   /* libc snprintf */
 #   define VCS_SNPRINTF
-#elif defined VMM || defined VMKERNEL
+#elif defined VMM || defined GLM || defined VMKERNEL
 #   include "vm_libc.h" /* vmcore snprintf */
 #   define VCS_SNPRINTF
 #endif

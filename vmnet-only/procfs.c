@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998-2013, 2020 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -100,7 +101,6 @@ VNetProc_Cleanup(void)
 }
 
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 /*
  *----------------------------------------------------------------------
  *
@@ -169,7 +169,6 @@ static struct file_operations fops = {
    .release = single_release,
 };
 #endif
-#endif
 
 
 /*
@@ -197,7 +196,6 @@ VNetProcMakeEntryInt(VNetProcEntry   *parent,   // IN:
                      VNetProcReadFn  *fn,       // IN:
                      VNetProcEntry  **ret)      // OUT:
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
    VNetProcEntry *ent = kmalloc(sizeof *ent, GFP_KERNEL);
    if (ent != NULL) {
       if (mode & S_IFDIR) {
@@ -219,16 +217,6 @@ VNetProcMakeEntryInt(VNetProcEntry   *parent,   // IN:
       kfree(ent);
    }
    return -ENOMEM;
-#else
-   VNetProcEntry *ent = create_proc_entry(name, mode, parent);
-   if (ent != NULL) {
-      ent->data      = data;
-      ent->read_proc = fn;
-      *ret           = ent;
-      return 0;
-   }
-   return -ENOMEM;
-#endif
 }
 
 
@@ -253,12 +241,8 @@ VNetProcRemoveEntryInt(VNetProcEntry *node,     // IN:
                        VNetProcEntry *parent)   // IN:
 {
    if (node != NULL) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
       proc_remove(node->pde);
       kfree(node);
-#else
-      remove_proc_entry(node->name, parent);
-#endif
    }
 }
 

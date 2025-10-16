@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2005 VMware, Inc. All rights reserved.
+ * Copyright (c) 2005-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,14 +56,7 @@
 #include "smac_compat.h"
 
 #ifdef VMX86_DEVEL
-#define DBG 1
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
-#define read_skb_users(skb) atomic_read(&skb->users)
-#else
 #define read_skb_users(skb) refcount_read(&skb->users)
-#endif
-#else
-#undef DBG
 #endif /* VMX86_DEVEL */
 
 
@@ -279,7 +273,7 @@ SMACL_ReleaseSpinlock(void **s,             // IN: spinlock
 }
 
 
-#ifdef DBG
+#ifdef VMX86_DEVEL
 /*
  *----------------------------------------------------------------------
  * SMACL_Print --
@@ -381,7 +375,7 @@ SMACL_IsSkbHostBound(struct sk_buff* skb) // IN: packet to process
 }
 
 
-#ifdef DBG
+#ifdef VMX86_DEVEL
 /*
  *----------------------------------------------------------------------
  * SMACL_PrintSkb --

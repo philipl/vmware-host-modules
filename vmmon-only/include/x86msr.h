@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -83,6 +83,7 @@ typedef struct MSRQuery {
 #define MSR_PRED_CMD          0x00000049
 #define MSR_BIOS_UPDT_TRIG    0x00000079
 #define MSR_BIOS_SIGN_ID      0x0000008b
+#define MSR_IA32_SMBASE       0x0000009e
 #define MSR_PERFCTR0          0x000000c1
 #define MSR_PERFCTR1          0x000000c2
 #define MSR_PLATFORM_INFO     0x000000ce // Intel Nehalem Family
@@ -300,15 +301,6 @@ typedef struct MSRQuery {
 #define MSR_LASTINTTOIP        0x000001de // Intel P6 Family
 #define MSR_LASTBRANCH_TOS_P6  0x000001c9 // Intel P6 Family
 
-#define MSR_LER_FROM_LIP       0x000001d7 // Intel Pentium4 Family
-#define MSR_LER_TO_LIP         0x000001d8 // Intel Pentium4 Family
-#define MSR_LASTBRANCH_TOS_P4  0x000001da // Intel Pentium4 Family
-#define MSR_LASTBRANCH_0       0x000001db // Intel Pentium4 Family
-#define MSR_LASTBRANCH_1       0x000001dc // Intel Pentium4 Family
-#define MSR_LASTBRANCH_2       0x000001dd // Intel Pentium4 Family
-#define MSR_LASTBRANCH_3       0x000001de // Intel Pentium4 Family
-
-#define MSR_LER_INFO           0x000001e0 // with architectural LBR support
 #define MSR_LASTBRANCH_FROM_IP 0x00000680 // From 1st gen Intel Core
 #define MSR_LASTBRANCH_TO_IP   0x000006c0 // From 1st gen Intel Core
 #define MSR_LASTBRANCH_INFO    0x00000dc0 // From 6th gen Intel Core
@@ -320,14 +312,15 @@ typedef struct MSRQuery {
 #define CORE_GEN6_LBR_SIZE   32     // From 6th gen Intel Core
 #define LBR_STACK_SIZE_MAX   32
 
-/* Architectural LBR MSRs */
+/* Intel architectural LBR MSRs */
 #define MSR_ARCH_LBR_CTL     0x000014ce
 #define MSR_ARCH_LBR_DEPTH   0x000014cf
 #define MSR_ARCH_LBR_FROM_IP 0x00001500
 #define MSR_ARCH_LBR_TO_IP   0x00001600
 #define MSR_ARCH_LBR_INFO    0x00001200
-#define MSR_LER_FROM_IP      0x000001dd
-#define MSR_LER_TO_IP        0x000001de
+#define MSR_LER_FROM_IP      0x000001dd // also non-arch and AMD LBR
+#define MSR_LER_TO_IP        0x000001de // also non-arch and AMD LBR
+#define MSR_LER_INFO         0x000001e0 // Intel arch LBR only
 
 /* MSR_ARCH_LBR_CTL bits */
 #define MSR_ARCH_LBR_CTL_LBREN         0x000001
@@ -686,6 +679,7 @@ typedef struct MSRQuery {
 /* This ifndef is necessary because this is defined by some kernel headers. */
 #ifndef MSR_K7_HWCR
 #define MSR_K7_HWCR                0xc0010015    // Available on AMD processors
+#define MSR_K7_HWCR_CPBDIS         0x02000000ULL // Disable Core Performance Boost
 #define MSR_K7_HWCR_SSEDIS         0x00008000ULL // Disable SSE bit
 #define MSR_K7_HWCR_MONMWAITUSEREN 0x00000400ULL // Enable MONITOR/MWAIT CPL>0
 #define MSR_K7_HWCR_TLBFFDIS       0x00000040ULL // Disable TLB Flush Filter
@@ -847,6 +841,8 @@ typedef struct MSRQuery {
 #define SEV_TERM_FROBOS_DECODE_ERROR     10 /* Instruction decode error. */
 #define SEV_TERM_FROBOS_PSC_FAILED       11 /* Page state change req failed. */
 #define SEV_TERM_FROBOS_NESTED_VC_EXC    12 /* A nested #VC occurred. */
+#define SEV_TERM_FROBOS_NO_SVSM          13 /* SVSM services not available. */
+#define SEV_TERM_FROBOS_SVSM_CALL_FAILED 14 /* SVSM call failed. */
 
 /* SEV-SNP (Secure Nested Paging) MSRs. */
 #define MSR_RMP_BASE              0xc0010132 // Address of first byte of RMP
@@ -1111,6 +1107,37 @@ typedef unsigned char MTRRType;
 #define MSR_PASID_RSVD_MASK              0xffffffff7ff00000ULL
 #define MSR_PASID_VALID_BIT              (1ULL << 31)
 #define MSR_PASID_PASID_MASK             0xfffff
+
+/* FRED MSRs. */
+#define IA32_FRED_CONFIG                 0x1d4
+#define MSR_FRED_CSL_SHIFT               0
+#define MSR_FRED_CSL_MASK                0x3
+#define MSR_FRED_RESERVED1_SHIFT         2
+#define MSR_FRED_RESERVED1_MASK          0x1
+#define MSR_FRED_DEC_SSP_SHIFT           3
+#define MSR_FRED_DEC_SSP_MASK            0x1
+#define MSR_FRED_RESERVED2_SHIFT         4
+#define MSR_FRED_RESERVED2_MASK          0x3
+#define MSR_FRED_SSIZE_SHIFT             6
+#define MSR_FRED_SSIZE_MASK              0x7
+#define MSR_FRED_CSL_SPECIAL_SHIFT       9
+#define MSR_FRED_CSL_SPECIAL_MASK        0x3
+#define MSR_FRED_RESERVED3_SHIFT         11
+#define MSR_FRED_RESERVED3_MASK          0x1
+#define MSR_FRED_ENTRY_LA_SHIFT          12
+#define MSR_FRED_ENTRY_LA_MASK           0xFFFFFFFFFFFFFULL
+
+#define IA32_FRED_RSP0                   0x1cc
+#define IA32_FRED_RSP1                   0x1cd
+#define IA32_FRED_RSP2                   0x1ce
+#define IA32_FRED_RSP3                   0x1cf
+
+#define IA32_FRED_SSP0                   MSR_PL0_SSP
+#define IA32_FRED_SSP1                   0x1d1
+#define IA32_FRED_SSP2                   0x1d2
+#define IA32_FRED_SSP3                   0x1d3
+
+#define IA32_FRED_STKLVLS                0x1d0
 
 static INLINE uint32
 X86MSR_SysCallEIP(uint64 star)

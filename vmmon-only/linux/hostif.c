@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -74,6 +74,9 @@
 #include "crosspage.h"
 #include "cpu_defs.h"
 
+#include "compat_version.h"
+#include "compat_timer.h"
+
 #include "pgtbl.h"
 #include "versioned_atomic.h"
 
@@ -86,6 +89,13 @@
 #define get_task_state(task) READ_ONCE((task)->__state)
 #else
 #define get_task_state(task) ((task)->state)
+#endif
+
+/* rdmsrl_safe is renamed to rdmsrq_safe in 6.16. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+#define compat_rdmsrq_safe(msr, p) rdmsrq_safe((msr), (p))
+#else
+#define compat_rdmsrq_safe(msr, p) rdmsrl_safe((msr), (p))
 #endif
 
 /*
@@ -1684,7 +1694,7 @@ HostIF_EstimateLockedPageLimit(const VMDriver* vm,                // IN
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0) || defined(RHEL85_BACKPORTS)
    lockedPages += global_node_page_state(NR_PAGETABLE);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
    lockedPages += global_zone_page_state(NR_PAGETABLE);
 #else
    lockedPages += global_page_state(NR_PAGETABLE);
@@ -1692,23 +1702,15 @@ HostIF_EstimateLockedPageLimit(const VMDriver* vm,                // IN
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || defined(RHEL84_BACKPORTS)
    lockedPages += global_node_page_state_pages(NR_SLAB_UNRECLAIMABLE_B);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
    lockedPages += global_node_page_state(NR_SLAB_UNRECLAIMABLE);
 #else
    lockedPages += global_page_state(NR_SLAB_UNRECLAIMABLE);
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
    lockedPages += global_node_page_state(NR_UNEVICTABLE);
-#else
-   lockedPages += global_page_state(NR_UNEVICTABLE);
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
    anonPages = global_node_page_state(NR_ANON_MAPPED);
-#else
-   anonPages = global_page_state(NR_ANON_PAGES);
-#endif
 
    forHost = lockedPages + LOCKED_PAGE_SLACK;
    if (forHost > totalPhysicalPages) {
@@ -1965,13 +1967,7 @@ HostIF_InitUptime(void)
    tm = HostIFGetTime();
    Atomic_Write64(&uptimeState.uptimeBase, -tm);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0) && !defined(timer_setup)
-   init_timer(&uptimeState.timer);
-   uptimeState.timer.function = (void *)HostIFUptimeResyncMono;
-   uptimeState.timer.data = (unsigned long)&uptimeState.timer;
-#else
    timer_setup(&uptimeState.timer, HostIFUptimeResyncMono, 0);
-#endif
    mod_timer(&uptimeState.timer, jiffies + HZ);
 }
 
@@ -1995,7 +1991,7 @@ HostIF_InitUptime(void)
 void
 HostIF_CleanupUptime(void)
 {
-   del_timer_sync(&uptimeState.timer);
+   timer_delete_sync(&uptimeState.timer);
 }
 
 
@@ -2569,13 +2565,8 @@ HostIF_SemaphoreWait(VMDriver *vm,   // IN:
     * the code to happily deal with a pipe or an eventfd. We only care about
     * reading no bytes (EAGAIN - non blocking fd) or sizeof(uint64).
     *
-    * Upstream Linux changed the function parameter types/ordering in 4.14.0.
     */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-   res = kernel_read(file, file->f_pos, (char *)&value, sizeof value);
-#else
    res = kernel_read(file, &value, sizeof value, &file->f_pos);
-#endif
    fput(file);
 
    if (res == sizeof value) {
@@ -3410,7 +3401,7 @@ HostIF_SafeRDMSR(unsigned int msr,   // IN
    int err;
    u64 v;
 
-   err = rdmsrl_safe(msr, &v);
+   err = compat_rdmsrq_safe(msr, &v);
    *val = (err == 0) ? v : 0;  // Linux corrupts 'v' on error
 
    return err;

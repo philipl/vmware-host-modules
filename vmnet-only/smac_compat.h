@@ -51,10 +51,11 @@ void   SMACINT SMACL_ReleaseSpinlock(void  **s, unsigned long *flags);
 struct sk_buff* SMACINT SMACL_DupPacket(struct sk_buff *skb);
 void*  SMACINT SMACL_PacketData(struct sk_buff *skb);
 int    SMACINT SMACL_IsSkbHostBound(struct sk_buff *skb);
-#ifdef DBG
+
+#ifdef VMX86_DEVEL
 void   SMACINT SMACL_Print(const char *m, ...);
 void   SMACINT SMACL_PrintSkb(struct sk_buff *skb, char *type);
-#endif /* DBG */
+#endif /* VMX86_DEVEL */
 
 #endif /* _SMAC_COMPAT_H */
 

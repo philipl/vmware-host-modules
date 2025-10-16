@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2007-2014 VMware, Inc. All rights reserved.
+ * Copyright (c) 2007-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,15 +34,6 @@
 #define LINUXLOG_BUFFER_SIZE 1024
 
 static const char *driverLogPrefix = "";
-
-/*
- * vsnprintf was born in 2.4.10. Fall back on vsprintf if we're
- * an older kernel.
- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 10)
-# define vsnprintf(str, size, fmt, args) vsprintf(str, fmt, args)
-#endif
-
 
 /*
  *----------------------------------------------------------------------------

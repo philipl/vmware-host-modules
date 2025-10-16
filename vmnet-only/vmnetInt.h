@@ -52,7 +52,7 @@
 #endif
 
 extern struct proto vmnet_proto;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0) || defined(sk_net_refcnt)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0) || defined(sk_net_refcnt)
 #   define compat_sk_alloc(_bri, _pri) sk_alloc(&init_net, \
                                                 PF_NETLINK, _pri, &vmnet_proto, 1)
 #else

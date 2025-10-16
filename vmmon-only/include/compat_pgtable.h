@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2002-2017 VMware, Inc. All rights reserved.
+ * Copyright (c) 2002-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,38 +22,36 @@
 
 
 #if defined(CONFIG_PARAVIRT) && defined(CONFIG_HIGHPTE)
-#   if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 21)
-#      include <asm/paravirt.h>
-#      undef paravirt_map_pt_hook
-#      define paravirt_map_pt_hook(type, va, pfn) do {} while (0)
-#   endif
+#   include <asm/paravirt.h>
+#   undef paravirt_map_pt_hook
+#   define paravirt_map_pt_hook(type, va, pfn) do {} while (0)
 #endif
 #include <asm/pgtable.h>
 
 
 /*
+ * p*d_leaf replaced p*d_large in 6.9.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
+#   define compat_pgd_leaf(pgd)     pgd_leaf(pgd)
+#   define compat_pmd_leaf(pmd)     pmd_leaf(pmd)
+#   define compat_pud_leaf(pud)     pud_leaf(pud)
+#   define compat_p4d_leaf(p4d)     p4d_leaf(p4d)
+#else
+#   define compat_pgd_leaf(pgd)     pgd_large(pgd)
+#   define compat_pmd_leaf(pmd)     pmd_large(pmd)
+#   define compat_pud_leaf(pud)     pud_large(pud)
+#   define compat_p4d_leaf(p4d)     p4d_large(p4d)
+#endif
+
+/*
  * p4d level appeared in 4.12.
  */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 #   define compat_p4d_offset(pgd, address)  p4d_offset(pgd, address)
 #   define compat_p4d_present(p4d)          p4d_present(p4d)
-#   define compat_p4d_large(p4d)            p4d_large(p4d)
 #   define compat_p4d_pfn(p4d)              p4d_pfn(p4d)
 #   define COMPAT_P4D_MASK                  P4D_MASK
 typedef p4d_t compat_p4d_t;
-#else
-#   define compat_p4d_offset(pgd, address)  (pgd)
-#   define compat_p4d_present(p4d)          (1)
-#   define compat_p4d_large(p4d)            (0)
-#   define compat_p4d_pfn(p4d)              INVALID_MPN  /* Not used */
-#   define COMPAT_P4D_MASK                  0            /* Not used */
-typedef pgd_t compat_p4d_t;
-#endif
-/* pud_pfn did not exist before 3.8. */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-#   define pud_pfn(pud)  INVALID_MPN
-#endif
-
 
 /*
  * Define VM_PAGE_KERNEL_EXEC for vmapping executable pages.

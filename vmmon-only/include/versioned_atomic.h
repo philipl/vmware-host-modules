@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (c) 1998,2007-2021 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -254,7 +255,7 @@ VersionedAtomic_BeginWrite(VersionedAtomic *versions) // IN
     * VersionedAtomic assumes single-writer, so reads are always local and
     * ONLY writes need to be synchronized with other threads.
     */
-#if !defined VMM
+#if !defined VMM && !defined GLM
    /*
     * Atomic_Write32() below requires the address to be naturally aligned, but
     * currently only checks that condition when VMM is defined (tracked by

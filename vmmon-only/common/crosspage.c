@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2016-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2016-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -50,7 +50,7 @@
 #   include "driver-config.h"
 #   if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) || defined(RHEL85_BACKPORTS)
 #      include <linux/objtool.h>
-#   elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
+#   elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 #      include <linux/frame.h>
 #   endif
 #endif

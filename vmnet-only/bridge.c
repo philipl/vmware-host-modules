@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -32,7 +32,7 @@
 #include <linux/mm.h>
 #include "compat_skbuff.h"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 10) || \
-    (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0) && !defined(SKB_GSO_CB))
+    (!defined(SKB_GSO_CB))
 #include <net/gso.h>
 #endif
 #include <linux/sockios.h>
@@ -1129,11 +1129,7 @@ VNetBridgeNotify(struct notifier_block *this, // IN: callback data (bridge)
    VNetBridge *bridge = list_entry(this, VNetBridge, notifier);
    struct net_device *dev;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)
    dev = netdev_notifier_info_to_dev(data);
-#else
-   dev = (struct net_device *)data;
-#endif
    switch (msg) {
    case NETDEV_UNREGISTER:
       LOG(2, (KERN_DEBUG "bridge-%s: interface %s is unregistering\n",

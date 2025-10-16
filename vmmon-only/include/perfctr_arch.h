@@ -40,6 +40,7 @@
 
 #include "vm_asm.h"
 #include "x86cpuid_asm.h"
+#include "cpuidInfo.h"
 
 /*
  * nmiNo      -- vmm peer is not attempting to do nmi profiling this run.
@@ -461,6 +462,7 @@ typedef struct NMIShared { /* shared with vmx and vmkernel */
 #define PERFCTR_CORE_ANYTHREAD                      0x00200000
 #define PERFCTR_CORE_IN_TX                          (CONST64U(1) << 32)
 #define PERFCTR_CORE_IN_TXCP                        (CONST64U(1) << 33)
+#define PERFCTR_CORE_EN_LBR_LOG                     (CONST64U(1) << 35)
 #define PERFCTR_CORE_SHIFT_BY_UNITMASK(e)           ((e) << 8)
 #define PERFCTR_CORE_FIXED_CTR0_PMC                 0x40000000
 #define PERFCTR_CORE_FIXED_CTR1_PMC                 0x40000001
@@ -631,6 +633,42 @@ PerfCtr_SelValidBits(Bool amd)
               PERFCTR_CORE_IN_TXCP;
    }
    return bits;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ *  PerfCtr_LBRLoggingSupported --
+ *
+ *      Checks if the PMC supports LBR event logging under the given CPUID.
+ *
+ * Results:
+ *      TRUE if LBR event logging is supported, FALSE otherwise.
+ *
+ * Side effects:
+ *      None
+ *
+ *----------------------------------------------------------------------
+ */
+
+static inline Bool
+PerfCtr_LBRLoggingSupported(unsigned pmcNum, const CpuidInfo *info)
+{
+   if (CpuidInfo_VendorIsIntel(info)) {
+      switch (pmcNum) {
+      case 0:
+         return CpuidInfo_IsSet(LBR_EVENT_LOGGING_PMC0, info);
+      case 1:
+         return CpuidInfo_IsSet(LBR_EVENT_LOGGING_PMC1, info);
+      case 2:
+         return CpuidInfo_IsSet(LBR_EVENT_LOGGING_PMC2, info);
+      case 3:
+         return CpuidInfo_IsSet(LBR_EVENT_LOGGING_PMC3, info);
+      default:
+         return FALSE;
+      }
+   }
+   return FALSE;
 }
 
 static inline uint64

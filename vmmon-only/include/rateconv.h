@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2003-2016, 2018-2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 2003-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,14 +18,12 @@
  *********************************************************/
 
 /*
- *
  * rateconv.h --
  *
- *     Parameters and functions for linear rate conversion of 64 bit
- *     counters:
+ *      Parameters and functions for linear rate conversion of 64 bit
+ *      counters:
  *
- *       y = ((x * mult) >> shift) + add.
- *
+ *        y = ((x * mult) >> shift) + add.
  */
 
 #ifndef _VM_RATECONV_H_
@@ -44,10 +43,6 @@
 #include "vm_assert.h"
 #include "vm_atomic.h"
 #include "versioned_atomic.h"
-
-#if defined(VM_ARM_ANY) && defined(_MSC_VER)
-#include "mul64.h"
-#endif
 
 #if defined __cplusplus
 extern "C" {

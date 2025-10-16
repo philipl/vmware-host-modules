@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998 VMware, Inc. All rights reserved.
+ * Copyright (c) 2009-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,25 +53,11 @@
 #   define __SMP__ 1
 #endif
 
-#if defined(CONFIG_MODVERSIONS) && defined(KERNEL_2_1)
-#   if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,60)
-/*
- * MODVERSIONS might be already defined when using kernel's Makefiles.
- */
-#      ifndef MODVERSIONS
-#         define MODVERSIONS
-#      endif
-#      include <linux/modversions.h>
-#   endif
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
 /*
  * Force the uintptr_t definition to come from linux/types.h instead of vm_basic_types.h.
  */
-#   include <linux/types.h>
-#   define _STDINT_H 1
-#endif
+#include <linux/types.h>
+#define _STDINT_H 1
 
 #ifndef __KERNEL__
 #   define __KERNEL__

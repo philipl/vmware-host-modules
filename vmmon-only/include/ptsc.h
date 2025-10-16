@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 1998-2014,2017,2019-2022,2024 VMware, Inc. All rights reserved.
+ * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -169,9 +170,8 @@ PTSC_Get(void)
    extern __thread User_ThreadData vmkUserTdata;
    VmAbsoluteTS ptsc;
 
-   if (vmkUserTdata.magic != USER_THREADDATA_MAGIC) {
-      return 0;
-   }
+   ASSERT(vmkUserTdata.magic == USER_THREADDATA_MAGIC);
+
    ptsc = vmkUserTdata.pseudoTSCGet(&vmkUserTdata);
    ASSERT((int64)ptsc >= 0);
    return ptsc;
