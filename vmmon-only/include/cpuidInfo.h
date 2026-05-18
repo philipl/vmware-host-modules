@@ -132,7 +132,7 @@ void        CpuidInfo_RegsVendorStr(const CPUIDRegs *regs,
                                     char (*vendorStr)[CPUID_VENDOR_STR_LEN]);
 CpuidNode  *CpuidInfoNodePtr(const CpuidInfo *info, uint32 eaxIn, uint32 ecxIn);
 
-#if !defined(VMM) && !defined(GLM) && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
+#if !defined(VMM) && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
 Bool        CpuidInfo_IsEmpty(const CpuidInfo *info);
 void        CpuidInfo_CopyToVMM(CpuidInfoReserve *dstAlloc,
                                 const CpuidInfo *src);
@@ -489,7 +489,7 @@ CpuidInfo_Reg(const CpuidInfo *info, uint32 eaxIn, uint32 ecxIn, CpuidReg reg)
 }
 
 
-#if !defined(VMM) && !defined(GLM)  && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
+#if !defined(VMM) && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
 
 static INLINE CpuidNode *
 CpuidInfo_Add(CpuidInfo *info, uint32 eaxIn, uint32 ecxIn, CPUIDRegs regs)
@@ -590,7 +590,7 @@ CpuidInfo_SetNodeReg(CpuidNode *n, CpuidReg reg, uint32 val)
            CPUID_INFO_LEAF(_info, _eaxIn, _ecxIn).regs
 
 
-#if !defined(VMM) && !defined(GLM)  && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
+#if !defined(VMM) && !defined(VMM_BOOTSTRAP) && !defined(COREQUERY)
 #define CPUID_INFO_SET_LEAF_EXISTS(_info, _eaxIn, _ecxIn)                  \
    do {                                                                    \
       (_info)->node[CPUID_INFO_LEAF_INDEX(_eaxIn, _ecxIn)].eaxIn = _eaxIn; \
@@ -1537,6 +1537,38 @@ CpuidInfo_UArchIsLunarLake(const CpuidInfo *info)
    return CPUID_UARCH_IS_LUNARLAKE(CpuidInfo_Version(info));
 }
 
+/*
+ *----------------------------------------------------------------------
+ *
+ * CpuidInfo_ModelIsPantherLake --
+ *
+ *      Returns TRUE if the info passed in is Panther Lake model.
+ *      Does not check vendor.
+ *
+ *----------------------------------------------------------------------
+ */
+static INLINE Bool
+CpuidInfo_ModelIsPantherLake(const CpuidInfo *info)
+{
+   return CPUID_MODEL_IS_PANTHERLAKE(CpuidInfo_Version(info));
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * CpuidInfo_UArchIsPantherLake --
+ *
+ *      Returns TRUE if the info passed in is Panther Lake architecture.
+ *      Does not check vendor.
+ *
+ *----------------------------------------------------------------------
+ */
+static INLINE Bool
+CpuidInfo_UArchIsPantherLake(const CpuidInfo *info)
+{
+   return CPUID_UARCH_IS_PANTHERLAKE(CpuidInfo_Version(info));
+}
+
  /*
   *----------------------------------------------------------------------
   *
@@ -1822,6 +1854,12 @@ static INLINE Bool
 CpuidInfo_ModelIsZen5(const CpuidInfo *info)
 {
    return CPUID_MODEL_IS_ZEN5(CpuidInfo_Version(info));
+}
+
+static INLINE Bool
+CpuidInfo_ModelIsZen6(const CpuidInfo *info)
+{
+   return CPUID_MODEL_IS_ZEN6(CpuidInfo_Version(info));
 }
 
 static INLINE Bool

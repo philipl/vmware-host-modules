@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -42,7 +42,7 @@
 
 /* Ensure enough space for obj build with GCOV_VMM=1. */
 #if defined(VMX86_SERVER)
-#define VMMBLOB_SIZE_MAX (25 * 1024 * 1024)
+#define VMMBLOB_SIZE_MAX (26 * 1024 * 1024)
 #else
 #define VMMBLOB_SIZE_MAX (25 * 1024 * 1024)
 #endif

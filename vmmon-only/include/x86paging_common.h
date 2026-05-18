@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -118,8 +118,9 @@ typedef enum {
    PM_FLAT,        /* non paging mode                                      */
    PM_2_LEVEL,     /* classic 32 bit non-pae style paging mode.            */
    PM_3_LEVEL,     /* classic 32 bit pae style paging mode.                */
-   PM_4_LEVEL,     /* long mode style paging mode (including compat mode). */
-   PM_NUM     = 4, /* number of different paging modes.                    */
+   PM_4_LEVEL,     /* long mode style 4 level paging (IA32e) mode.         */
+   PM_5_LEVEL,     /* long mode style 5 level paging (IA32e) mode.         */
+   PM_NUM     = 5, /* number of different paging modes.                    */
 } PagingMode;
 
 /*

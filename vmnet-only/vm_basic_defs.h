@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2003-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 2003-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -47,7 +47,17 @@
 #ifdef KBUILD_MODNAME
 #  include <linux/stddef.h>
 #elif !defined(VMKERNEL)
+#if defined(__GNUC__) && __GNUC__ >= 15
+#pragma GCC diagnostic push
+// 'unreachable' is defined C23 and is in stddef.h in gcc15.
+#pragma push_macro("unreachable")
+#undef unreachable
+#endif
 #  include <stddef.h>
+#if defined(__GNUC__) && __GNUC__ >= 15
+#pragma pop_macro("unreachable")
+#pragma GCC diagnostic pop
+#endif
 #else
    /*
     * Vmkernel's bogus __FreeBSD__ value causes gcc <stddef.h> to break.
@@ -169,6 +179,8 @@ Max(int a, int b)
 
 /* SIGNEXT64 sign extends a n-bit value to 64-bits. */
 #define SIGNEXT64(val, n)       (((int64)(val) << (64 - (n))) >> (64 - (n)))
+/* SIGNEXT32 sign extends a n-bit value to 32-bits. */
+#define SIGNEXT32(val, n)       (((int32)(val) << (32 - (n))) >> (32 - (n)))
 
 #define DWORD_ALIGN(x)          ((((x) + 3) >> 2) << 2)
 #define QWORD_ALIGN(x)          ((((x) + 7) >> 3) << 3)
@@ -1049,5 +1061,43 @@ typedef int pid_t;
    #define VMW_CLANG_SUPPRESS
 #endif
 
+
+/*
+ * VMW_DECL_MIN_SIZE
+ *
+ *   Defines the minimum size of an array parameter. On capable C compilers,
+ *   this expands to the static keyword introduced in C99. Unsupported in C++.
+ *
+ *   TODO: Update the MSVC check after the following bug gets fixed:
+ *         https://developercommunity.visualstudio.com/t/c1/1475168
+ */
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
+    !defined(_MSC_VER)
+   #define VMW_DECL_MIN_SIZE(_sz) static _sz
+#else
+   #define VMW_DECL_MIN_SIZE(_sz)
+#endif
+
+/*
+ * CFI_ADJUST_CFA_OFFSET:
+ *
+ * This is a best-effort attempt to fix the CFI information for inline
+ * assembly functions that modify rsp. Assuming that the current CFI
+ * register is rsp, pushing to the stack adjusts the offset of the CFA from
+ * rsp by 8 bytes.
+ *
+ * However, this may not be true in all cases: despite compiling with
+ * -fomit-frame-pointer, some functions in the kernel still use rbp. A full
+ * fix to this problem is being tracked by VMKC-1186.
+ *
+ * Since this is only a best-effort attempt for now, only emit CFI
+ * directives for kernel code and only if GCC is currently doing so.
+ * Notably, frobos is compiled without `.eh_frame`: see `FROBOS_CC_FLAGS`.
+ */
+#if defined(VMKERNEL) && defined(__GCC_HAVE_DWARF2_CFI_ASM)
+#define CFI_ADJUST_CFA_OFFSET(offset) ".cfi_adjust_cfa_offset " #offset "\n"
+#else
+#define CFI_ADJUST_CFA_OFFSET(_offset)
+#endif
 
 #endif // ifndef _VM_BASIC_DEFS_H_

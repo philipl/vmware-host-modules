@@ -31,6 +31,10 @@
 #define INCLUDE_ALLOW_VMMON
 #include "includeCheck.h"
 
+#if !defined(VMX86_SERVER) && (defined(VMM) || defined(GLM))
+#include "addrlayout.h"
+#endif
+
 #include "cpu_types.h"
 #include "ptsc.h"
 #include "vcpuid.h"
@@ -367,8 +371,6 @@ typedef struct VMCrossPageData {
 #define CROSSPAGE_VERSION    ((CROSSPAGE_VERSION_BASE << 1) + WS_INTR_STRESS)
 
 #if !defined(VMX86_SERVER) && (defined(VMM) || defined(GLM))
-#define CROSS_PAGE             ((VMCrossPageData *) \
-                                VPN_2_VA(CROSS_PAGE_DATA_START))
 #define VMM_SWITCH_SHARED_DATA ((VMCrossPageData * const) \
                                 VPN_2_VA(CROSS_PAGE_DATA_START))
 #endif

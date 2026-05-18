@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2016-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2016-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -117,5 +117,7 @@ VT_EXIT(BUS_LOCK,             74)
 VT_EXIT(NOTIFY_WINDOW,        75)
 VT_EXIT(SEAMCALL,             76)
 VT_EXIT(TDCALL,               77)
+VT_EXIT(RDMSRLIST,            78)
+VT_EXIT(WRMSRLIST,            79)
 /* Bump this up if you add an exit reason. */
-#define VT_NUM_EXIT_REASONS   78
+#define VT_NUM_EXIT_REASONS   80

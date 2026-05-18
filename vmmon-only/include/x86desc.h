@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -79,7 +79,6 @@
 #define RESET_DESC_BASE_CS         0xffff0000
 #define RESET_DESC_LIMIT           0x0000ffff
 #define RESET_DESC_LIMIT_AP        0xffffffff
-#define RESET_DESC_LIMIT_TDX       0xffffffff
 #define RESET_SELECTOR_VALUE       0x00000000
 #define RESET_SELECTOR_VALUE_CS    0x0000f000
 #define RESET_GDT_LIMIT            0x0000ffff

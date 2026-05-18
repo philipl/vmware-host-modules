@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2005-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 2005-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -190,6 +190,9 @@
 
 #define SVM_VMCB_CLEAN_MASK           ((1 << SVM_VMCB_NUM_CLEANBITS) - 1)
 
+/* VMCB.pmlIndex */
+#define SVM_VMCB_PML_INDEX            0x1D0
+
 /* Segment attribute masks (used for conversion to unpacked format) */
 #define SVM_VMCB_ATTRIB_LOW           0x000000ff
 #define SVM_VMCB_ATTRIB_HI            0x00000f00
@@ -311,9 +314,10 @@
 #define SVM_EXITCODE_AVIC_NOACCEL        1026
 #define SVM_EXITCODE_VMGEXIT             1027
 #define SVM_EXITCODE_PVALIDATE           1028
+#define SVM_EXITCODE_PML_LOGFULL         1031
 /* Adjust SVM_LAST_HI_EXIT_REASON if you add a high exit reason. */
 #define SVM_FIRST_HI_EXIT_REASON 1024
-#define SVM_LAST_HI_EXIT_REASON  1028
+#define SVM_LAST_HI_EXIT_REASON  1031
 #define SVM_NUM_HI_EXIT_REASONS  (SVM_LAST_HI_EXIT_REASON + 1 - \
                                   SVM_FIRST_HI_EXIT_REASON)
 
@@ -405,9 +409,10 @@
 #define SVM_APEXIT_GET            0x1
 
 /* ExitInfo1 for SNP AP creation exits */
-#define SVM_SNPAPCREATE_EI1_APIC_ID  0xffffffff00000000ULL
-#define SVM_SNPAPCREATE_EI1_VMPL     0x00000000000f0000ULL
-#define SVM_SNPAPCREATE_EI1_REQTYPE  0x000000000000ffffULL
+#define SVM_SNPAPCREATE_EI1_APIC_ID    0xffffffff00000000ULL
+#define SVM_SNPAPCREATE_EI1_VMPL_SHIFT 16
+#define SVM_SNPAPCREATE_EI1_VMPL       0x00000000000f0000ULL
+#define SVM_SNPAPCREATE_EI1_REQTYPE    0x000000000000ffffULL
 #define    SVM_SNPAPCREATE_EI1_REQTYPE_WAIT_INIT 0x0
 #define    SVM_SNPAPCREATE_EI1_REQTYPE_VMRUN     0x1
 #define    SVM_SNPAPCREATE_EI1_REQTYPE_DESTROY   0x2

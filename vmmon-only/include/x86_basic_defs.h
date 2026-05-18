@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2006-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 2006-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -231,6 +231,17 @@
                                 (1u << EXC_VC) | (1u << EXC_SX))
 
 /*
+ * Exception error code definitions
+ */
+
+// #CP - Control Protection
+#define EC_CP_ENCL_BIT        15
+#define EC_CP_ENCL_MASK       (1u << EC_CP_ENCL_BIT)
+#define EC_CP_IS_ENCL(_ec)    (((_ec) & EC_CP_ENCL_MASK) != 0)
+#define EC_CP_CPEC_MASK       (EC_CP_ENCL_MASK - 1)
+#define EC_CP_CPEC(_ec)       ((_ec) & EC_CP_CPEC_MASK)
+
+/*
  * eflag/rflag definitions
  */
 
@@ -289,6 +300,5 @@ typedef enum x86_FLAGS {
 
 /* Reset state of RIP */
 #define RESET_RIP       0xfff0
-#define RESET_RIP_TDX   0xfffffff0  /* Reset RIP for TDX protected mode boot. */
 
 #endif // ifndef _VM_BASIC_DEFS_H_

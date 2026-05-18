@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2003-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 2003-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -86,6 +86,8 @@ extern "C" {
  * mssb32_0    MSB set (uint32)            0..31    -1
  * lssb64_0    LSB set (uint64)            0..63    -1
  * mssb64_0    MSB set (uint64)            0..63    -1
+ * lssb128_0   LSB set (uint128)           0..127   -1
+ * mssb128_0   MSB set (uint128)           0..127   -1
  * lssbPtr_0   LSB set (uintptr_t;32-bit)  0..31    -1
  * lssbPtr_0   LSB set (uintptr_t;64-bit)  0..63    -1
  * mssbPtr_0   MSB set (uintptr_t;32-bit)  0..31    -1
@@ -94,6 +96,8 @@ extern "C" {
  * mssb32      MSB set (uint32)            1..32    0
  * lssb64      LSB set (uint64)            1..64    0
  * mssb64      MSB set (uint64)            1..64    0
+ * lssb128     LSB set (uint128)           1..128   0
+ * mssb128     MSB set (uint128)           1..128   0
  * lssbPtr     LSB set (uintptr_t;32-bit)  1..32    0
  * lssbPtr     LSB set (uintptr_t;64-bit)  1..64    0
  * mssbPtr     MSB set (uintptr_t;32-bit)  1..32    0
@@ -326,6 +330,38 @@ mssb64_0(const uint64 value)
    }
 }
 
+#ifdef VM_HAS_INT128
+
+static inline int
+lssb128_0(const uint128 value)
+{
+   int bit = lssb64_0((uint64)value);
+   if (bit == -1) {
+      bit = lssb64_0((uint64)(value >> 64));
+      if (bit != -1) {
+         bit += 64;
+      }
+   }
+   return bit;
+}
+
+
+static inline int
+mssb128_0(const uint128 value)
+{
+   int bit = mssb64_0((uint64)(value >> 64));
+   if (bit != -1) {
+      bit += 64;
+   } else {
+      bit = mssb64_0((uint64)value);
+   }
+
+   return bit;
+}
+
+#endif // VM_HAS_INT128
+
+
 #ifdef USE_ARCH_X86_CUSTOM
 #undef USE_ARCH_X86_CUSTOM
 #endif
@@ -382,11 +418,30 @@ lssb64(const uint64 value)
    return (unsigned)lssb64_0(value) + 1;
 }
 
+
 static inline unsigned
 mssb64(const uint64 value)
 {
    return (unsigned)mssb64_0(value) + 1;
 }
+
+
+#ifdef VM_HAS_INT128
+
+static inline unsigned
+lssb128(const uint128 value)
+{
+   return (unsigned)lssb128_0(value) + 1;
+}
+
+static inline unsigned
+mssb128(const uint128 value)
+{
+   return (unsigned)mssb128_0(value) + 1;
+}
+
+#endif // VM_HAS_INT128
+
 
 
 /*
@@ -821,19 +876,25 @@ RDTSC(void)
 static inline void
 SetBit32(uint32 *var, unsigned index)
 {
-   *var |= 1 << index;
+   *var |= 1u << index;
 }
 
 static inline void
 ClearBit32(uint32 *var, unsigned index)
 {
-   *var &= ~(1 << index);
+   *var &= ~(1u << index);
 }
 
 static inline void
 ToggleBit32(uint32 *var, unsigned index)
 {
-   *var ^= 1 << index;
+   *var ^= 1u << index;
+}
+
+static inline Bool
+TestBit32(const uint32 *var, unsigned index)
+{
+   return (*var & (1u << index)) != 0;
 }
 
 static inline void
@@ -855,16 +916,38 @@ ToggleBit64(uint64 *var, unsigned index)
 }
 
 static inline Bool
-TestBit32(const uint32 *var, unsigned index)
-{
-   return (*var & (1 << index)) != 0;
-}
-
-static inline Bool
 TestBit64(const uint64 *var, unsigned index)
 {
    return (*var & (CONST64U(1) << index)) != 0;
 }
+
+#ifdef VM_HAS_INT128
+
+static inline void
+SetBit128(uint128 *var, unsigned index)
+{
+   *var |= ((uint128)1) << index;
+}
+
+static inline void
+ClearBit128(uint128 *var, unsigned index)
+{
+   *var &= ~((uint128)1 << index);
+}
+
+static inline Bool
+TestBit128(const uint128 *var, unsigned index)
+{
+   return (*var & ((uint128)1 << index)) != 0;
+}
+
+static inline void
+ToggleBit128(uint128 *var, unsigned index)
+{
+   *var ^= ((uint128)1 << index);
+}
+
+#endif // VM_HAS_INT128
 
 /*
  *-----------------------------------------------------------------------------

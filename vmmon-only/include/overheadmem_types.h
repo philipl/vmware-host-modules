@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2001-2013, 2022-2023 VMware, Inc. All rights reserved.
+ * Copyright (c) 2001-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -136,5 +137,15 @@ typedef struct OvhdMemStats {
    unsigned    *maxUsedByCategory;
    unsigned    *maxRsvdByCategory;
 } OvhdMemStats;
+
+/* Types of host overheads to support a VM. */
+
+typedef enum OvhdHostType {
+   OvhdHost_pagetable,
+   OvhdHost_heap,
+   OvhdHost_misc,
+   NumOvhdHostTypes
+} OvhdHostType;
+
 
 #endif

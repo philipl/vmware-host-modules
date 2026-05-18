@@ -116,7 +116,7 @@ typedef struct Assert_Info {
 
 #define ASSERT_NULL_MONSRCLOC     0             // there is never line 0
 
-#if (defined(VMM) || defined(GLM)) && !defined(DECODER)
+#if defined(VMM) && !defined(DECODER)
 /*
  * Assertion information is collected in a non-loadable section
  * named .assert_info.  Each record in this section contains

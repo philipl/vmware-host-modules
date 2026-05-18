@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -57,6 +57,7 @@
  */
 #define PCI_VENDOR_ID_VMWARE                    0x15AD
 #define PCI_DEVICE_ID_VMWARE_SBX                0x0420
+#define PCI_DEVICE_ID_VMWARE_SVGA4_DO           0x0411
 #define PCI_DEVICE_ID_VMWARE_SVGA4_RO           0x0410
 #define PCI_DEVICE_ID_VMWARE_SVGA4_EFI          0x0409
 #define PCI_DEVICE_ID_VMWARE_SVGA4              0x0408
@@ -202,9 +203,10 @@
 /*
  * Intel/Habana AI accelerators.
  */
-#define PCI_VENDOR_ID_HABANA         0x1da3
-#define PCI_DEVICE_ID_HABANA_GAUDI2  0x1020
-#define PCI_DEVICE_ID_HABANA_GAUDI3  0x1060
+#define PCI_VENDOR_ID_HABANA              0x1da3
+#define PCI_DEVICE_ID_HABANA_GAUDI2       0x1020
+#define PCI_DEVICE_ID_HABANA_GAUDI3_OAM   0x1060 /* Open Accelerator Module */
+#define PCI_DEVICE_ID_HABANA_GAUDI3_PCIE  0x1063 /* PCIe add-in card */
 
 /*
  * Intel FPGAs

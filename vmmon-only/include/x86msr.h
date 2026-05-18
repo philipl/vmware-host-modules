@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -74,6 +74,7 @@ typedef struct MSRQuery {
 #define MSR_TSC               0x00000010
 #define MSR_PLATFORM_ID       0x00000017
 #define MSR_APIC_BASE         0x0000001b
+#define MSR_USER_MSR_CTL      0x0000001c
 #define MSR_MSRLIST_BARRIER   0x0000002f
 #define MSR_SMI_COUNT         0x00000034 // Intel Nehalem Family
 #define MSR_CORE_THREAD_COUNT 0x00000035 // Intel Nehalem Family +
@@ -81,6 +82,7 @@ typedef struct MSRQuery {
 #define MSR_TSC_ADJUST        0x0000003b
 #define MSR_SPEC_CTRL         0x00000048
 #define MSR_PRED_CMD          0x00000049
+#define MSR_PM_LOGICAL_ID     0x00000054 // Intel GNR and later
 #define MSR_BIOS_UPDT_TRIG    0x00000079
 #define MSR_BIOS_SIGN_ID      0x0000008b
 #define MSR_IA32_SMBASE       0x0000009e
@@ -374,6 +376,7 @@ typedef struct MSRQuery {
 #define MSR_HWP_INTERRUPT           0x00000773
 #define MSR_HWP_REQUEST             0x00000774
 #define MSR_HWP_PECI_REQUEST_INFO   0x00000775
+#define MSR_HWP_CTL                 0x00000776
 #define MSR_HWP_STATUS              0x00000777
 
 /* Power Management Enable MSR bits */
@@ -847,6 +850,7 @@ typedef struct MSRQuery {
 /* SEV-SNP (Secure Nested Paging) MSRs. */
 #define MSR_RMP_BASE              0xc0010132 // Address of first byte of RMP
 #define MSR_RMP_END               0xc0010133 // Address of last byte of RMP
+#define MSR_AMD64_RMP_CFG         0xc0010136 // Segmented RMP config
 
 #define MSR_AMD_DE_CFG           0xc0011029  // Decode configuration
 #define MSR_AMD_DE_CFG_BIT1      (1ULL<<1)
@@ -1139,6 +1143,26 @@ typedef unsigned char MTRRType;
 
 #define IA32_FRED_STKLVLS                0x1d0
 
+/* User MSR Bits. */
+#define USER_MSR_CTL_ENABLE_BIT          (1ULL << 0)
+#define USER_MSR_CTL_ADDR_MASK           0xfffffffffffffULL
+#define USER_MSR_CTL_ADDR_SHIFT          12
+#define USER_MSR_RESERVED                0xffffffffffffc000ULL
+
+/* Protected Processor Identification Number (PPIN) MSRs. */
+#define MSR_INTEL_PPIN_CTL               0x4e
+#define MSR_INTEL_PPIN                   0x4f
+
+#define MSR_AMD_PPIN_CTL                 0xc00102f0
+#define MSR_AMD_PPIN                     0xc00102f1
+
+/*
+ * If this MSR_INTEL_PPIN_CTL or MSR_AMD_PPIN_CTL bit is set,
+ * then it is allowed to read MSR_INTEL_PPIN or MSR_AMD_PPIN.
+ */
+#define PPIN_EN_BIT                      (1ULL << 1)
+#define PPIN_LOCK_BIT                    (1ULL << 0)
+
 static INLINE uint32
 X86MSR_SysCallEIP(uint64 star)
 {
@@ -1183,15 +1207,15 @@ X86MSR_SysRetCS(uint64 star)
 static INLINE uint64
 X86MSR_GetMSR(uint32 cx)
 {
-   uint64 msr;
+   uint32 lower, upper;
    __asm__ __volatile__(
-      "rdmsr; shlq $32, %%rdx; orq %%rdx, %%rax"
-      : "=a" (msr)
+      "rdmsr"
+      : "=a" (lower),
+        "=d" (upper)
       : "c" (cx)
-      : "%rdx"
    );
 
-   return msr;
+   return ((uint64)upper << 32) | lower;
 }
 
 static INLINE void

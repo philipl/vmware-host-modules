@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2004-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 2004-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -85,6 +85,8 @@
    (CONST64U(1) << MSR_VMX_BASIC_TRUE_CTLS_SHIFT)
 #define MSR_VMX_BASIC_VMENTRY_IGNS_ERR_CODE     \
    (CONST64U(1) << MSR_VMX_BASIC_VMENTRY_IGNS_ERR_CODE_SHIFT)
+#define MSR_VMX_BASIC_FRED_NESTED_EXCEPTION     \
+   (CONST64U(1) << MSR_VMX_BASIC_FRED_NESTED_EXCEPTION_SHIFT)
 
 #define MSR_VMX_MISC_VMEXIT_SAVES_LMA           \
    (CONST64U(1) << MSR_VMX_MISC_VMEXIT_SAVES_LMA_SHIFT)
@@ -143,6 +145,12 @@
 
 #define MSR_VMX_EXIT_CTLS2_REPORT_FRACT_SHSTK \
    (CONST64U(1) << MSR_VMX_EXIT_CTLS2_REPORT_FRACT_SHSTK_SHIFT)
+
+#define MSR_VMX_EXIT_CTLS2_LOAD_FRED          \
+   (CONST64U(1) << MSR_VMX_EXIT_CTLS2_LOAD_FRED_SHIFT)
+
+#define MSR_VMX_EXIT_CTLS2_SAVE_FRED          \
+   (CONST64U(1) << MSR_VMX_EXIT_CTLS2_SAVE_FRED_SHIFT)
 
 #define VT_VMCS_STANDARD_TAG           0x00000000
 #define VT_VMCS_SHADOW_TAG             0x80000000
@@ -246,7 +254,8 @@ enum {
    VMX_BASIC(MEMTYPE,               50,  4)              \
    VMX_BASIC(ADVANCED_IOINFO,       54,  1)              \
    VMX_BASIC(TRUE_CTLS,             55,  1)              \
-   VMX_BASIC(VMENTRY_IGNS_ERR_CODE, 56,  1)
+   VMX_BASIC(VMENTRY_IGNS_ERR_CODE, 56,  1)              \
+   VMX_BASIC(FRED_NESTED_EXCEPTION, 58,  1)
 
 #define VMX_BASIC_CAP                                    \
         VMX_BASIC_CAP_NDA                                \
@@ -408,6 +417,9 @@ enum {
    VMXCAP(_EXIT_CTLS2, _field, _pos, 1)
 #define VMX_EXIT_CTLS2_CAP_NDA
 #define VMX_EXIT_CTLS2_CAP_PUB                           \
+   VMX_EXIT2(SAVE_FRED,           0)                     \
+   VMX_EXIT2(LOAD_FRED,           1)                     \
+   VMX_EXIT2(LOAD_SPEC_CTL,       2)                     \
    VMX_EXIT2(REPORT_FRACT_SHSTK,  3)
 
 #define VMX_EXIT_CTLS2_CAP                               \
@@ -434,7 +446,9 @@ enum {
    VMX_ENTRY(LOAD_UINV,           19)                    \
    VMX_ENTRY(LOAD_CET,            20)                    \
    VMX_ENTRY(LOAD_LBR,            21)                    \
-   VMX_ENTRY(LOAD_PKRS,           22)
+   VMX_ENTRY(LOAD_PKRS,           22)                    \
+   VMX_ENTRY(LOAD_FRED,           23)                    \
+   VMX_ENTRY(LOAD_SPEC_CTL,       24)
 
 #define VMX_ENTRY_CTLS_CAP                               \
         VMX_ENTRY_CTLS_CAP_NDA                           \
@@ -624,11 +638,11 @@ enum {
  * exit reasons, because we shouldn't encounter any new exit reasons
  * unless we opt-in to the features that produce them.
  */
-#define VT_EXITREASON_SYNTH_BASE     78
-#define VT_EXITREASON_SYNTH_IRET     78
-#define VT_EXITREASON_SYNTH_NMI      79
-#define VT_EXITREASON_SYNTH_ICEBP    80
-#define VT_EXITREASON_SYNTH_EXC_BASE 81
+#define VT_EXITREASON_SYNTH_BASE     80
+#define VT_EXITREASON_SYNTH_IRET     80
+#define VT_EXITREASON_SYNTH_NMI      81
+#define VT_EXITREASON_SYNTH_ICEBP    82
+#define VT_EXITREASON_SYNTH_EXC_BASE 83
 #define VT_EXITREASON_SYNTH_MAX      112
 
 #define VT_EXITREASON_SYNTH_EXC(gatenum) \
@@ -848,7 +862,6 @@ enum {
 #define VT_TSQUAL_GATE  3
 
 /* PML Constants */
-#define VT_MAX_PML_INDEX   511
 #define VT_PML_ENTRY_MASK  (~(QWORD(0, PAGE_MASK)))
 
 typedef union {

@@ -1,5 +1,6 @@
 /*********************************************************
- * Copyright (C) 2018 VMware, Inc. All rights reserved.
+ * Copyright (c) 2018-2025 Broadcom. All Rights Reserved.
+ * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -547,6 +548,67 @@ Atomic_Write64Relaxed(Atomic_uint64 *var, // OUT:
 #error No compiler defined for Atomic_Write64Relaxed
 #endif
 }
+
+
+/*
+ *-----------------------------------------------------------------------------
+ *
+ * Atomic_Inc16Relaxed --
+ *
+ *      Atomic read, increment, write (relaxed ordering).
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      None.
+ *
+ *-----------------------------------------------------------------------------
+ */
+
+static INLINE void
+Atomic_Inc16Relaxed(Atomic_uint16 *var) // IN/OUT
+{
+#if defined VM_ATOMIC_USE_C11
+   atomic_fetch_add_explicit((_Atomic(uint16) *)&var->value, 1,
+                             memory_order_relaxed);
+#elif defined __GNUC__ && defined VM_ARM_64
+   _VMATOM_X(OP, 16, FALSE, &var->value, add, 1);
+#else
+   Atomic_Inc16(var);
+#endif
+}
+
+
+/*
+ *-----------------------------------------------------------------------------
+ *
+ * Atomic_Dec16Relaxed --
+ *
+ *      Atomic read, decrement, write (relaxed ordering).
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      None.
+ *
+ *-----------------------------------------------------------------------------
+ */
+
+static INLINE void
+Atomic_Dec16Relaxed(Atomic_uint16 *var) // IN/OUT
+{
+#if defined VM_ATOMIC_USE_C11
+   atomic_fetch_sub_explicit((_Atomic(uint16) *)&var->value, 1,
+                             memory_order_relaxed);
+#elif defined __GNUC__ && defined VM_ARM_64
+   _VMATOM_X(OP, 16, FALSE, &var->value, sub, 1);
+#else
+   Atomic_Dec16(var);
+#endif
+}
+
 
 #define MAKE_ATOMIC_RELAXED_FUNCS(name, size, in, out, cast)                  \
    static INLINE out                                                          \

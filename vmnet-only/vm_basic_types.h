@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 1998-2025 Broadcom. All Rights Reserved.
+ * Copyright (c) 1998-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -706,11 +706,11 @@ typedef void * UserVA;
  */
 
 #ifdef _WIN32
-#ifdef _WIN64
-#define VMW_KEY_WOW64_32KEY KEY_WOW64_32KEY
-#else
-#define VMW_KEY_WOW64_32KEY 0x0
-#endif
+   #ifdef _WIN64
+      #define VMW_KEY_WOW64_32KEY KEY_WOW64_32KEY
+   #else
+      #define VMW_KEY_WOW64_32KEY 0x0
+   #endif
 #endif
 
 

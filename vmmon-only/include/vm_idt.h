@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2012-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2012-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -25,6 +25,16 @@
 
 #ifndef _VM_IDT_H_
 #define _VM_IDT_H_
+
+#include "vm_basic_types.h"
+#include "x86_basic_defs.h"
+#if defined(VMM) || defined(GLM)
+#include "mon_assert.h"
+#else
+#include "vm_assert.h"
+#endif
+#include "x86desc.h"
+#include "segs.h"
 
 #define INCLUDE_ALLOW_USERLEVEL
 #define INCLUDE_ALLOW_MODULE
@@ -71,10 +81,14 @@ extern "C" {
 #define IST_VMM_MCE                 3
 #define MAX_VMM_IST                 3
 /* IST entries for the vmkernel. */
+#define IST_VMK_CP                  4
 #define IST_VMK_MCE                 5
 #define IST_VMK_DF                  6
 #define IST_VMK_NMI                 7
 
+#ifndef VMKERNEL
+void IDT_Init(void);
+#endif
 
 static inline int
 IDT_MonitorISTForVector(int v)
@@ -90,6 +104,23 @@ IDT_MonitorISTForVector(int v)
       return IST_VMM_MCE;
    }
    return IST_NONE;
+}
+
+static inline void
+IDT_MakeGate(Gate64 *gate, uint8 *handler, int dpl, int ist)
+{
+   uint64 addr  = (uint64)handler;
+   ASSERT(!gate->present && dpl <= 3);
+   ASSERT(ist <= MAX_VMM_IST);
+   ASSERT_ON_COMPILE(MAX_VMM_IST <= 7);
+   gate->offset_0_15  = addr & 0xffff;
+   gate->offset_16_31 = (addr >> 16) & 0xffff;
+   gate->offset_32_63 = addr >> 32;
+   gate->segment      = SYSTEM_CODE_SELECTOR,
+   gate->ist          = ist;
+   gate->type         = INTER_GATE;
+   gate->DPL          = dpl;
+   gate->present      = 1;
 }
 
 #if defined __cplusplus

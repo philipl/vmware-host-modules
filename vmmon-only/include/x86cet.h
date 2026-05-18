@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2020-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2020-2026 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -64,6 +64,18 @@ typedef ALIGNED(8) struct {
    uint32   lip, __lip_unused;
    Selector cs, __cs_unused[3];
 } ShadowFrame32;
+
+
+/*
+ * Write a 64 bit value to an arbitrary address on a shadow stack.
+ *
+ * Shadow stacks must be active and WRSS must be allowed.
+ */
+#define CET_SHADOWSTACK_WRITE(_destAddr, _data)   \
+   asm volatile("wrssq %1, %0"                    \
+                : "=m"(*(uint64*)(_destAddr))     \
+                : "r"(_data)                      \
+                : "memory");
 
 
 /*

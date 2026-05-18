@@ -1,5 +1,5 @@
 /*********************************************************
- * Copyright (c) 2018-2024 Broadcom. All Rights Reserved.
+ * Copyright (c) 2018-2025 Broadcom. All Rights Reserved.
  * The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -242,9 +242,15 @@ SharedAreaVmmon_RegisterRegion(VMDriver *vm,
       if (status != PAGE_LOCK_SUCCESS) {
          PageCnt resetPage;
 
-         /* Reset the region pages for this VCPU to their original state. */
+         /*
+          * Unlock and invalidate all pages for this VCPU that were successfully
+          * locked before the failure. This restores the region to its original
+          * state so no pages remain pinned in memory.
+          */
          for (resetPage = 0; resetPage < page; resetPage++) {
-            status = Vmx86_UnlockPage(vm, uAddr);
+            VPN resetVPN = block->region.baseVpn + resetPage;
+            VA64 resetUAddr = VPN_2_VA(resetVPN);
+            status = Vmx86_UnlockPage(vm, resetUAddr);
             ASSERT(status == PAGE_UNLOCK_SUCCESS);
             pages[resetPage] = INVALID_MPN;
          }
@@ -282,8 +288,9 @@ SharedAreaVmmon_GetRegionMPN(VMDriver *vm, SharedAreaVmmonRequest *request)
    ASSERT(vcpu < vm->numVCPUs);
    ASSERT(type < NUM_SHARED_AREAS);
    ASSERT(IMPLIES(!SharedAreaVmmonIsMultiVCPU(type), vcpu == 0));
+
    region = &vm->sharedArea->regions[type];
-   pages = region->pages + vcpu * region->pagesPerVcpu;
+
    if (region->pages == NULL || region->pagesPerVcpu == 0) {
       Warning("(%s) Requested unregistered region %u, VCPU %u\n", __FUNCTION__,
               type, vcpu);
@@ -295,5 +302,6 @@ SharedAreaVmmon_GetRegionMPN(VMDriver *vm, SharedAreaVmmonRequest *request)
       return INVALID_MPN;
    }
 
+   pages = region->pages + vcpu * region->pagesPerVcpu;
    return pages[pgOffset];
 }
