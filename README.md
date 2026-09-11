@@ -1,3 +1,19 @@
+This repository is a fork of https://github.com/mkubecek/vmware-host-modules
+which seems to have become unmaintained. As a VMware user, I need to make sure
+I have working kernel modules, so I figured I'd keep publishing updates for
+other folks.
+
+I continue to follow the branch and tag pattern documented in the original
+README, so look for the appropriate branch that matches your Workstation
+release. Given that Workstation is now free to use, I will only maintain the
+latest release branch at any moment in time.
+
+As a reflection of this, my repo only contains branches that I actively worked
+on. Historical releases can be found in the original repo.
+
+Original README
+===============
+
 This repository tracks patches needed to build VMware (Player and
 Workstation) host modules against recent kernels. As it focuses on recent
 kernels (older ones do not need patching), only vmmon and vmnet modules are
